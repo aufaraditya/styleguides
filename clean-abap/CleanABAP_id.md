@@ -1,11 +1,8 @@
-> Translated from [English original on 14.11.2019](https://github.com/SAP/styleguides/tree/72ecf7fd7d41151d5bbca29020d4ec9de953db8c).
-> Latest version [in English](CleanABAP.md).
+# Clean ABAP
 
-# ABAP 整洁之道
-
-> [**中文**](CleanABAP_zh.md)
+> [**English**](CleanABAP.md)
 > &nbsp;·&nbsp;
-> [English](CleanABAP.md)
+> [中文](CleanABAP_zh.md)
 > &nbsp;·&nbsp;
 > [Français](CleanABAP_fr.md)
 > &nbsp;·&nbsp;
@@ -17,310 +14,378 @@
 > &nbsp;·&nbsp;
 > [한국어](CleanABAP_kr.md)
 
-本指南针对 [ABAP](https://zh.wikipedia.org/wiki/ABAP) 改编自 [Robert C. Martin 所著的 _Clean Code_]。
+This guide is an adoption of
+[Robert C. Martin's _Clean Code_]
+for [ABAP](https://en.wikipedia.org/wiki/ABAP).
 
-[速查表](cheat-sheet/CheatSheet.md)为打印优化版本。
+The [Cheat Sheet](cheat-sheet/CheatSheet.md) is a print-optimized version.
 
-[Robert C. Martin 所著的 _Clean Code_]: https://www.oreilly.com/library/view/clean-code/9780136083238/
+[Robert C. Martin's _Clean Code_]: https://www.oreilly.com/library/view/clean-code/9780136083238/
 
-## 目录
+## Content
 
-- [做法](#做法)
-   - [整洁代码入门之法](#整洁代码入门之法)
-   - [旧代码重构之法](#旧代码重构之法)
-   - [自动检查之法](#自动检查之法)
-   - [与其他指南互通之法](#与其他指南互通之法)
-   - [表示异议之法](#表示异议之法)
-- [名称](#名称)
-   - [使用描述性名称](#使用描述性名称)
-   - [首选解决方案域和问题域术语](#首选解决方案域和问题域术语)
-   - [使用复数形式](#使用复数形式)
-   - [使用能读出来的名称](#使用能读出来的名称)
-   - [避免缩写](#避免缩写)
-   - [在各处使用相同缩写](#在各处使用相同缩写)
-   - [用名词表示类而用动词表示方法](#用名词表示类而用动词表示方法)
-   - [避免干扰词，如 "data"、"info"、"object"](#避免干扰词如-datainfoobject)
-   - [每个概念选取一个词](#每个概念选取一个词)
-   - [仅在本意如此时使用模式名称](#仅在本意如此时使用模式名称)
-   - [避免编码，特别是匈牙利表示法和前缀](#避免编码特别是匈牙利表示法和前缀)
-- [语言](#语言)
-   - [顾及传统](#顾及传统)
-   - [顾及性能](#顾及性能)
-   - [面向对象编程优于过程式编程](#面向对象编程优于过程式编程)
-   - [函数式语言结构优于过程式语言结构](#函数式语言结构优于过程式语言结构)
-   - [避免过时语言元素](#避免过时语言元素)
-   - [明智地使用设计模式](#明智地使用设计模式)
-- [常量](#常量)
-   - [使用常量而非幻数](#使用常量而非幻数)
-   - [枚举类优于常量接口](#枚举类优于常量接口)
-   - [如果不使用枚举类，则对常量进行分组](#如果不使用枚举类则对常量进行分组)
-- [变量](#变量)
-   - [内联声明优于最前声明](#内联声明优于最前声明)
-   - [勿在可选分支中内联声明](#勿在可选分支中内联声明)
-   - [勿用链式最前声明](#勿用链式最前声明)
-   - [REF TO 优于 FIELD-SYMBOL](#ref-to-优于-field-symbol)
-- [表](#表)
-   - [使用恰当的表类型](#使用恰当的表类型)
-   - [避免 DEFAULT KEY](#避免-default-key)
-   - [INSERT INTO TABLE 优于 APPEND TO](#insert-into-table-优于-append-to)
-   - [LINE_EXISTS 优于 READ TABLE 或 LOOP AT](#line_exists-优于-read-table-或-loop-at)
-   - [READ TABLE 优于 LOOP AT](#read-table-优于-loop-at)
-   - [LOOP AT WHERE 优于嵌套式 IF](#loop-at-where-优于嵌套式-if)
-   - [避免不必要的表读取](#避免不必要的表读取)
-- [字符串](#字符串)
-   - [使用 \` 定义文字](#使用--定义文字)
-   - [使用 | 汇集文本](#使用--汇集文本)
-- [布尔值](#布尔值)
-   - [明智地使用布尔值](#明智地使用布尔值)
-   - [用 ABAP_BOOL 表示布尔值](#用-abap_bool-表示布尔值)
-   - [使用 ABAP_TRUE 和 ABAP_FALSE 进行比较](#使用-abap_true-和-abap_false-进行比较)
-   - [使用 XSDBOOL 设置布尔变量](#使用-xsdbool-设置布尔变量)
-- [条件](#条件)
-   - [尽量使条件为正](#尽量使条件为正)
-   - [IS NOT 优于 NOT IS](#is-not-优于-not-is)
-   - [考虑分解复杂条件](#考虑分解复杂条件)
-   - [考虑提炼复杂条件](#考虑提炼复杂条件)
-- [If 语句](#if-语句)
-   - [无空的 IF 分支](#无空的-if-分支)
-   - [对于多个备选条件，CASE 优于 ELSE IF](#对于多个备选条件case-优于-else-if)
-   - [保持低嵌套深度](#保持低嵌套深度)
-- [正则表达式](#正则表达式)
-   - [较简单的方法优于正则表达式](#较简单的方法优于正则表达式)
-   - [基本检查优于正则表达式](#基本检查优于正则表达式)
-   - [考虑汇集复杂的正则表达式](#考虑汇集复杂的正则表达式)
-- [类](#类)
-   - [类：面向对象](#类面向对象)
-      - [对象优于静态类](#对象优于静态类)
-      - [组合优于继承](#组合优于继承)
-      - [勿在同一个类中混用有态和无态](#勿在同一个类中混用有态和无态)
-   - [作用域](#作用域)
-      - [缺省情况下为全局，仅在适当位置为局部](#缺省情况下为全局仅在适当位置为局部)
-      - [若非为继承而设计则为 FINAL](#若非为继承而设计则为-final)
-      - [缺省情况下为 PRIVATE，仅在需要时为 PROTECTED](#缺省情况下为-private仅在需要时为-protected)
-      - [考虑使用不可变对象而非 getter](#考虑使用不可变对象而非-getter)
-      - [保守地使用 READ-ONLY](#保守地使用-read-only)
-   - [构造函数](#构造函数)
-      - [NEW 优于 CREATE OBJECT](#new-优于-create-object)
-      - [如果全局类为 CREATE PRIVATE，则保留 CONSTRUCTOR 为公有](#如果全局类为-create-private则保留-constructor-为公有)
-      - [多个静态创建方法优于可选参数](#多个静态创建方法优于可选参数)
-      - [用描述性名称表示多个创建方法](#用描述性名称表示多个创建方法)
-      - [仅在多实例无意义的情况下变成单例](#仅在多实例无意义的情况下变成单例)
-- [方法](#方法)
-   - [调用](#调用)
-      - [函数式调用优于过程式调用](#函数式调用优于过程式调用)
-      - [省略 RECEIVING](#省略-receiving)
-      - [省略可选关键字 EXPORTING](#省略可选关键字-exporting)
-      - [在单参数调用中省略参数名称](#在单参数调用中省略参数名称)
-      - [在调用实例方法时省略自我引用 me](#在调用实例方法时省略自我引用-me)
-   - [方法：面向对象](#方法面向对象)
-      - [实例优于静态方法](#实例优于静态方法)
-      - [公共实例方法应为接口的一部分](#公共实例方法应为接口的一部分)
-   - [参数数目](#参数数目)
-      - [力图减少 IMPORTING 参数，最好少于三个](#力图减少-importing-参数最好少于三个)
-      - [拆分方法而非添加 OPTIONAL 参数](#拆分方法而非添加-optional-参数)
-      - [保守地使用 PREFERRED PARAMETER](#保守地使用-preferred-parameter)
-      - [RETURN、EXPORT 或 CHANGE 恰有一个参数](#returnexport-或-change-恰有一个参数)
-   - [参数类型](#参数类型)
-      - [RETURNING 优于 EXPORTING](#returning-优于-exporting)
-      - [RETURNING 大表通常没有问题](#returning-大表通常没有问题)
-      - [单独使用 RETURNING 或 EXPORTING 或 CHANGING，而不要组合使用](#单独使用-returning-或-exporting-或-changing而不要组合使用)
-      - [在合适时保守地使用 CHANGING](#在合适时保守地使用-changing)
-      - [拆分方法而非使用布尔输入参数](#拆分方法而非使用布尔输入参数)
-   - [参数名称](#参数名称)
-      - [考虑调用 RETURNING 参数 RESULT](#考虑调用-returning-参数-result)
-   - [参数初始化](#参数初始化)
-      - [清除或覆盖 EXPORTING 引用参数](#清除或覆盖-exporting-引用参数)
-         - [如果输入和输出可能相同则要当心](#如果输入和输出可能相同则要当心)
-      - [勿清除 VALUE 参数](#勿清除-value-参数)
-   - [方法体](#方法体)
-      - [做且仅做一件事，把它做好](#做且仅做一件事把它做好)
-      - [关注愉快路径或错误处理，但非两者兼顾](#关注愉快路径或错误处理但非两者兼顾)
-      - [将抽象降一级](#将抽象降一级)
-      - [保持方法精简](#保持方法精简)
-   - [控制流](#控制流)
-      - [快速失败](#快速失败)
-      - [CHECK 对 RETURN](#check-对-return)
-      - [避免在其他位置使用 CHECK](#避免在其他位置使用-check)
-- [错误处理](#错误处理)
-   - [消息](#消息)
-      - [使消息易于查找](#使消息易于查找)
-   - [返回代码](#返回代码)
-      - [异常优于返回代码](#异常优于返回代码)
-      - [别让故障溜走](#别让故障溜走)
-   - [异常](#异常)
-      - [异常针对的是错误，而不是正常情况](#异常针对的是错误而不是正常情况)
-      - [使用基于类的异常](#使用基于类的异常)
-   - [抛出](#抛出)
-      - [使用各自的超类](#使用各自的超类)
-      - [抛出一种类型的异常](#抛出一种类型的异常)
-      - [使用子类以便调用者能够区分错误情况](#使用子类以便调用者能够区分错误情况)
-      - [针对可应对的异常抛出 CX_STATIC_CHECK](#针对可应对的异常抛出-cx_static_check)
-      - [针对通常不可恢复的情况抛出 CX_NO_CHECK](#针对通常不可恢复的情况抛出-cx_no_check)
-      - [针对可避免的异常考虑 CX_DYNAMIC_CHECK](#针对可避免的异常考虑-cx_dynamic_check)
-      - [针对完全不可恢复的情况进行转储](#针对完全不可恢复的情况进行转储)
-      - [RAISE EXCEPTION NEW 优于 RAISE EXCEPTION TYPE](#raise-exception-new-优于-raise-exception-type)
-   - [捕获](#捕获)
-      - [包裹外来异常而非任其侵入代码](#包裹外来异常而非任其侵入代码)
-- [注释](#注释)
-   - [用代码表达自己而不是靠注释](#用代码表达自己而不是靠注释)
-   - [注释绝非坏名称的借口](#注释绝非坏名称的借口)
-   - [使用方法而非注释来对代码分段](#使用方法而非注释来对代码分段)
-   - [写注释是要解释为什么而非是什么](#写注释是要解释为什么而非是什么)
-   - [设计应放到设计文档里而不是代码里](#设计应放到设计文档里而不是代码里)
-   - [用 " 而非 * 加注释](#用--而非--加注释)
-   - [将注释放在与其相关的语句前面](#将注释放在与其相关的语句前面)
-   - [删除代码而非将其注释掉](#删除代码而非将其注释掉)
-   - [使用 FIXME、TODO 和 XXX 并添加自己的标识](#使用-fixmetodo-和-xxx-并添加自己的标识)
-   - [勿添加方法签名和注释结尾](#勿添加方法签名和注释结尾)
-   - [勿复制消息文本作为注释](#勿复制消息文本作为注释)
-   - [ABAP 文档仅适用于公共 API](#abap-文档仅适用于公共-api)
-   - [编译指示优于伪注释](#编译指示优于伪注释)
-- [格式化](#格式化)
-   - [保持一致](#保持一致)
-   - [为阅读而不是书写进行优化](#为阅读而不是书写进行优化)
-   - [激活前使用格式优化器](#激活前使用格式优化器)
-   - [使用格式优化器团队设置](#使用格式优化器团队设置)
-   - [每行只有一条语句](#每行只有一条语句)
-   - [恪守合理的行长度](#恪守合理的行长度)
-   - [紧缩代码](#紧缩代码)
-   - [添加单一空行来分隔内容，而不要添加多行](#添加单一空行来分隔内容而不要添加多行)
-   - [勿因分隔空行产生困扰](#勿因分隔空行产生困扰)
-   - [对齐同一对象而非不同对象的赋值](#对齐同一对象而非不同对象的赋值)
-   - [在行尾关闭括号](#在行尾关闭括号)
-   - [保持单参数调用于一行](#保持单参数调用于一行)
-   - [保持参数在调用后面](#保持参数在调用后面)
-   - [如果换行，则在调用下缩进参数](#如果换行则在调用下缩进参数)
-   - [将多个参数换行](#将多个参数换行)
-   - [对齐参数](#对齐参数)
-   - [如果调用行过长则将其换行](#如果调用行过长则将其换行)
-   - [缩进并卡到制表位](#缩进并卡到制表位)
-   - [如同方法调用那样缩进内联声明](#如同方法调用那样缩进内联声明)
-   - [勿对齐类型子句](#勿对齐类型子句)
-- [测试](#测试)
-   - [原则](#原则)
-      - [编写可测试的代码](#编写可测试的代码)
-      - [让他人能够进行模拟](#让他人能够进行模拟)
-      - [可读性规则](#可读性规则)
-      - [勿制作副本或写测试报告](#勿制作副本或写测试报告)
-      - [测试公共项而非私有内部项](#测试公共项而非私有内部项)
-      - [勿困扰于覆盖范围](#勿困扰于覆盖范围)
-   - [测试类](#测试类)
-      - [按用途调用局部测试类](#按用途调用局部测试类)
-      - [将测试放在局部类](#将测试放在局部类)
-      - [将帮助方法放在帮助类](#将帮助方法放在帮助类)
-      - [如何执行测试类](#如何执行测试类)
-   - [被测代码](#被测代码)
-      - [赋予被测代码有意义的名称，或使用缺省名称 CUT](#赋予被测代码有意义的名称或使用缺省名称-cut)
-      - [测试接口而非类](#测试接口而非类)
-      - [将被测代码的调用提取到自身的方法](#将被测代码的调用提取到自身的方法)
-   - [注入](#注入)
-      - [使用依赖倒置注入测试替身](#使用依赖倒置注入测试替身)
-      - [考虑使用 ABAP 测试替身工具](#考虑使用-abap-测试替身工具)
-      - [利用测试工具](#利用测试工具)
-      - [使用测试缝隙作为临时解决办法](#使用测试缝隙作为临时解决办法)
-      - [使用 LOCAL FRIENDS 访问依赖倒置的构造函数](#使用-local-friends-访问依赖倒置的构造函数)
-      - [勿滥用 LOCAL FRIENDS 侵入被测代码](#勿滥用-local-friends-侵入被测代码)
-      - [勿更改生产代码来使代码可测试](#勿更改生产代码来使代码可测试)
-      - [勿子类化来模拟方法](#勿子类化来模拟方法)
-      - [勿模拟不需要的东西](#勿模拟不需要的东西)
-      - [勿构建测试框架](#勿构建测试框架)
-   - [测试方法](#测试方法)
-      - [测试方法名称：反映出设想和预期的情形](#测试方法名称反映出设想和预期的情形)
-      - [使用 given-when-then](#使用-given-when-then)
-      - ["When" 恰为一个调用](#when-恰为一个调用)
-      - [除非真正需要否则勿添加 TEARDOWN](#除非真正需要否则勿添加-teardown)
-   - [测试数据](#测试数据)
-      - [使其易于辨明含义](#使其易于辨明含义)
-      - [使其易于辨明差异](#使其易于辨明差异)
-      - [使用常量描述测试数据的用途和重要性](#使用常量描述测试数据的用途和重要性)
-   - [断言](#断言)
-      - [少而精的断言](#少而精的断言)
-      - [使用恰当的断言类型](#使用恰当的断言类型)
-      - [断言内容而非数量](#断言内容而非数量)
-      - [断言质量而非内容](#断言质量而非内容)
-      - [使用 FAIL 检查是否出现预期异常](#使用-fail-检查是否出现预期异常)
-      - [转发意外异常而非捕获就失败](#转发意外异常而非捕获就失败)
-      - [编写自定义断言以缩短代码和避免重复](#编写自定义断言以缩短代码和避免重复)
+- [How to](#how-to)
+  - [How to Get Started with Clean Code](#how-to-get-started-with-clean-code)
+  - [How to Refactor Legacy Code](#how-to-refactor-legacy-code)
+  - [How to Check Automatically](#how-to-check-automatically)
+  - [How to Relate to Other Guides](#how-to-relate-to-other-guides)
+  - [How to Disagree](#how-to-disagree)
+- [Names](#names)
+  - [Use descriptive names](#use-descriptive-names)
+  - [Prefer solution domain and problem domain terms](#prefer-solution-domain-and-problem-domain-terms)
+  - [Use plural](#use-plural)
+  - [Use pronounceable names](#use-pronounceable-names)
+  - [Avoid abbreviations](#avoid-abbreviations)
+  - [Use same abbreviations everywhere](#use-same-abbreviations-everywhere)
+  - [Use nouns for classes and verbs for methods](#use-nouns-for-classes-and-verbs-for-methods)
+  - [Avoid noise words such as "data", "info", "object"](#avoid-noise-words-such-as-data-info-object)
+  - [Pick one word per concept](#pick-one-word-per-concept)
+  - [Use pattern names only if you mean them](#use-pattern-names-only-if-you-mean-them)
+  - [Avoid encodings, esp. Hungarian notation and prefixes](#avoid-encodings-esp-hungarian-notation-and-prefixes)
+- [Language](#language)
+  - [Mind the legacy](#mind-the-legacy)
+  - [Mind the performance](#mind-the-performance)
+  - [Prefer object orientation to procedural programming](#prefer-object-orientation-to-procedural-programming)
+  - [Prefer functional to procedural language constructs](#prefer-functional-to-procedural-language-constructs)
+  - [Avoid obsolete language elements](#avoid-obsolete-language-elements)
+  - [Use design patterns wisely](#use-design-patterns-wisely)
+- [Constants](#constants)
+  - [Use constants instead of magic numbers](#use-constants-instead-of-magic-numbers)
+  - [Prefer enumeration classes to constants interfaces](#prefer-enumeration-classes-to-constants-interfaces)
+  - [If you don't use enumeration classes, group your constants](#if-you-dont-use-enumeration-classes-group-your-constants)
+- [Variables](#variables)
+  - [Prefer inline to up-front declarations](#prefer-inline-to-up-front-declarations)
+  - [Don't declare inline in optional branches](#dont-declare-inline-in-optional-branches)
+  - [Do not chain up-front declarations](#do-not-chain-up-front-declarations)
+  - [Prefer REF TO to FIELD-SYMBOL](#prefer-ref-to-to-field-symbol)
+- [Tables](#tables)
+  - [Use the right table type](#use-the-right-table-type)
+  - [Avoid DEFAULT KEY](#avoid-default-key)
+  - [Prefer INSERT INTO TABLE to APPEND TO](#prefer-insert-into-table-to-append-to)
+  - [Prefer LINE_EXISTS to READ TABLE or LOOP AT](#prefer-line_exists-to-read-table-or-loop-at)
+  - [Prefer READ TABLE to LOOP AT](#prefer-read-table-to-loop-at)
+  - [Prefer LOOP AT WHERE to nested IF](#prefer-loop-at-where-to-nested-if)
+  - [Avoid unnecessary table reads](#avoid-unnecessary-table-reads)
+- [Strings](#strings)
+  - [Use ` to define literals](#use--to-define-literals)
+  - [Use | to assemble text](#use--to-assemble-text)
+- [Booleans](#booleans)
+  - [Use Booleans wisely](#use-booleans-wisely)
+  - [Use ABAP_BOOL for Booleans](#use-abap_bool-for-booleans)
+  - [Use ABAP_TRUE and ABAP_FALSE for comparisons](#use-abap_true-and-abap_false-for-comparisons)
+  - [Use XSDBOOL to set Boolean variables](#use-xsdbool-to-set-boolean-variables)
+- [Conditions](#conditions)
+  - [Try to make conditions positive](#try-to-make-conditions-positive)
+  - [Prefer IS NOT to NOT IS](#prefer-is-not-to-not-is)
+  - [Consider decomposing complex conditions](#consider-decomposing-complex-conditions)
+  - [Consider extracting complex conditions](#consider-extracting-complex-conditions)
+- [Ifs](#ifs)
+  - [No empty IF branches](#no-empty-if-branches)
+  - [Prefer CASE to ELSE IF for multiple alternative conditions](#prefer-case-to-else-if-for-multiple-alternative-conditions)
+  - [Keep the nesting depth low](#keep-the-nesting-depth-low)
+- [Regular expressions](#regular-expressions)
+  - [Prefer simpler methods to regular expressions](#prefer-simpler-methods-to-regular-expressions)
+  - [Prefer basis checks to regular expressions](#prefer-basis-checks-to-regular-expressions)
+  - [Consider assembling complex regular expressions](#consider-assembling-complex-regular-expressions)
+- [Classes](#classes)
+  - [Classes: Object orientation](#classes-object-orientation)
+    - [Prefer objects to static classes](#prefer-objects-to-static-classes)
+    - [Prefer composition to inheritance](#prefer-composition-to-inheritance)
+    - [Don't mix stateful and stateless in the same class](#dont-mix-stateful-and-stateless-in-the-same-class)
+  - [Scope](#scope)
+    - [Global by default, local only where appropriate](#global-by-default-local-only-where-appropriate)
+    - [FINAL if not designed for inheritance](#final-if-not-designed-for-inheritance)
+    - [Members PRIVATE by default, PROTECTED only if needed](#members-private-by-default-protected-only-if-needed)
+    - [Consider using immutable instead of getter](#consider-using-immutable-instead-of-getter)
+    - [Use READ-ONLY sparingly](#use-read-only-sparingly)
+  - [Constructors](#constructors)
+    - [Prefer NEW to CREATE OBJECT](#prefer-new-to-create-object)
+    - [If your global class is CREATE PRIVATE, leave the CONSTRUCTOR public](#if-your-global-class-is-create-private-leave-the-constructor-public)
+    - [Prefer multiple static creation methods to optional parameters](#prefer-multiple-static-creation-methods-to-optional-parameters)
+    - [Use descriptive names for multiple creation methods](#use-descriptive-names-for-multiple-creation-methods)
+    - [Make singletons only where multiple instances don't make sense](#make-singletons-only-where-multiple-instances-dont-make-sense)
+- [Methods](#methods)
+  - [Calls](#calls)
+    - [Don't call static methods through instance variables](#dont-call-static-methods-through-instance-variables)
+    - [Prefer functional to procedural calls](#prefer-functional-to-procedural-calls)
+    - [Omit RECEIVING](#omit-receiving)
+    - [Omit the optional keyword EXPORTING](#omit-the-optional-keyword-exporting)
+    - [Omit the parameter name in single parameter calls](#omit-the-parameter-name-in-single-parameter-calls)
+    - [Omit the self-reference me when calling an instance method](#omit-the-self-reference-me-when-calling-an-instance-method)
+  - [Methods: Object orientation](#methods-object-orientation)
+    - [Prefer instance to static methods](#prefer-instance-to-static-methods)
+    - [Public instance methods should be part of an interface](#public-instance-methods-should-be-part-of-an-interface)
+  - [Parameter Number](#parameter-number)
+    - [Aim for few IMPORTING parameters, at best less than three](#aim-for-few-importing-parameters-at-best-less-than-three)
+    - [Split methods instead of adding OPTIONAL parameters](#split-methods-instead-of-adding-optional-parameters)
+    - [Use PREFERRED PARAMETER sparingly](#use-preferred-parameter-sparingly)
+    - [RETURN, EXPORT, or CHANGE exactly one parameter](#return-export-or-change-exactly-one-parameter)
+  - [Parameter Types](#parameter-types)
+    - [Prefer RETURNING to EXPORTING](#prefer-returning-to-exporting)
+    - [RETURNING large tables is usually okay](#returning-large-tables-is-usually-okay)
+    - [Use either RETURNING or EXPORTING or CHANGING, but not a combination](#use-either-returning-or-exporting-or-changing-but-not-a-combination)
+    - [Use CHANGING sparingly, where suited](#use-changing-sparingly-where-suited)
+    - [Split method instead of Boolean input parameter](#split-method-instead-of-boolean-input-parameter)
+  - [Parameter Names](#parameter-names)
+    - [Consider calling the RETURNING parameter RESULT](#consider-calling-the-returning-parameter-result)
+  - [Parameter Initialization](#parameter-initialization)
+    - [Clear or overwrite EXPORTING reference parameters](#clear-or-overwrite-exporting-reference-parameters)
+      - [Take care if input and output could be the same](#take-care-if-input-and-output-could-be-the-same)
+    - [Don't clear VALUE parameters](#dont-clear-value-parameters)
+  - [Method Body](#method-body)
+    - [Do one thing, do it well, do it only](#do-one-thing-do-it-well-do-it-only)
+    - [Focus on the happy path or error handling, but not both](#focus-on-the-happy-path-or-error-handling-but-not-both)
+    - [Descend one level of abstraction](#descend-one-level-of-abstraction)
+    - [Keep methods small](#keep-methods-small)
+  - [Control flow](#control-flow)
+    - [Fail fast](#fail-fast)
+    - [CHECK vs. RETURN](#check-vs-return)
+    - [Avoid CHECK in other positions](#avoid-check-in-other-positions)
+- [Error Handling](#error-handling)
+  - [Messages](#messages)
+    - [Make messages easy to find](#make-messages-easy-to-find)
+  - [Return Codes](#return-codes)
+    - [Prefer exceptions to return codes](#prefer-exceptions-to-return-codes)
+    - [Don't let failures slip through](#dont-let-failures-slip-through)
+  - [Exceptions](#exceptions)
+    - [Exceptions are for errors, not for regular cases](#exceptions-are-for-errors-not-for-regular-cases)
+    - [Use class-based exceptions](#use-class-based-exceptions)
+  - [Throwing](#throwing)
+    - [Use own super classes](#use-own-super-classes)
+    - [Throw one type of exception](#throw-one-type-of-exception)
+    - [Use sub-classes to enable callers to distinguish error situations](#use-sub-classes-to-enable-callers-to-distinguish-error-situations)
+    - [Throw CX_STATIC_CHECK for manageable exceptions](#throw-cx_static_check-for-manageable-exceptions)
+    - [Throw CX_NO_CHECK for usually unrecoverable situations](#throw-cx_no_check-for-usually-unrecoverable-situations)
+    - [Consider CX_DYNAMIC_CHECK for avoidable exceptions](#consider-cx_dynamic_check-for-avoidable-exceptions)
+    - [Dump for totally unrecoverable situations](#dump-for-totally-unrecoverable-situations)
+    - [Prefer RAISE EXCEPTION NEW to RAISE EXCEPTION TYPE](#prefer-raise-exception-new-to-raise-exception-type)
+  - [Catching](#catching)
+    - [Wrap foreign exceptions instead of letting them invade your code](#wrap-foreign-exceptions-instead-of-letting-them-invade-your-code)
+- [Comments](#comments)
+  - [Express yourself in code, not in comments](#express-yourself-in-code-not-in-comments)
+  - [Comments are no excuse for bad names](#comments-are-no-excuse-for-bad-names)
+  - [Use methods instead of comments to segment your code](#use-methods-instead-of-comments-to-segment-your-code)
+  - [Write comments to explain the why, not the what](#write-comments-to-explain-the-why-not-the-what)
+  - [Design goes into the design documents, not the code](#design-goes-into-the-design-documents-not-the-code)
+  - [Comment with ", not with *](#comment-with--not-with-)
+  - [Put comments before the statement they relate to](#put-comments-before-the-statement-they-relate-to)
+  - [Delete code instead of commenting it](#delete-code-instead-of-commenting-it)
+  - [Use FIXME, TODO, and XXX and add your ID](#use-fixme-todo-and-xxx-and-add-your-id)
+  - [Don't add method signature and end-of comments](#dont-add-method-signature-and-end-of-comments)
+  - [Don't duplicate message texts as comments](#dont-duplicate-message-texts-as-comments)
+  - [ABAP Doc only for public APIs](#abap-doc-only-for-public-apis)
+  - [Prefer pragmas to pseudo comments](#prefer-pragmas-to-pseudo-comments)
+- [Formatting](#formatting)
+  - [Be consistent](#be-consistent)
+  - [Optimize for reading, not for writing](#optimize-for-reading-not-for-writing)
+  - [Use the Pretty Printer before activating](#use-the-pretty-printer-before-activating)
+  - [Use your Pretty Printer team settings](#use-your-pretty-printer-team-settings)
+  - [No more than one statement per line](#no-more-than-one-statement-per-line)
+  - [Stick to a reasonable line length](#stick-to-a-reasonable-line-length)
+  - [Condense your code](#condense-your-code)
+  - [Add a single blank line to separate things, but not more](#add-a-single-blank-line-to-separate-things-but-not-more)
+  - [Don't obsess with separating blank lines](#dont-obsess-with-separating-blank-lines)
+  - [Align assignments to the same object, but not to different ones](#align-assignments-to-the-same-object-but-not-to-different-ones)
+  - [Close brackets at line end](#close-brackets-at-line-end)
+  - [Keep single parameter calls on one line](#keep-single-parameter-calls-on-one-line)
+  - [Keep parameters behind the call](#keep-parameters-behind-the-call)
+  - [If you break, indent parameters under the call](#if-you-break-indent-parameters-under-the-call)
+  - [Line-break multiple parameters](#line-break-multiple-parameters)
+  - [Align parameters](#align-parameters)
+  - [Break the call to a new line if the line gets too long](#break-the-call-to-a-new-line-if-the-line-gets-too-long)
+  - [Indent and snap to tab](#indent-and-snap-to-tab)
+  - [Indent in-line declarations like method calls](#indent-in-line-declarations-like-method-calls)
+  - [Don't align type clauses](#dont-align-type-clauses)
+  - [Don't chain assignments](#dont-chain-assignments)
+- [Testing](#testing)
+  - [Principles](#principles)
+    - [Write testable code](#write-testable-code)
+    - [Enable others to mock you](#enable-others-to-mock-you)
+    - [Readability rules](#readability-rules)
+    - [Don't make copies or write test reports](#dont-make-copies-or-write-test-reports)
+    - [Test publics, not private internals](#test-publics-not-private-internals)
+    - [Don't obsess about coverage](#dont-obsess-about-coverage)
+  - [Test Classes](#test-classes)
+    - [Call local test classes by their purpose](#call-local-test-classes-by-their-purpose)
+    - [Put tests in local classes](#put-tests-in-local-classes)
+    - [Put help methods in help classes](#put-help-methods-in-help-classes)
+    - [How to execute test classes](#how-to-execute-test-classes)
+  - [Code Under Test](#code-under-test)
+    - [Name the code under test meaningfully, or default to CUT](#name-the-code-under-test-meaningfully-or-default-to-cut)
+    - [Test against interfaces, not implementations](#test-against-interfaces-not-implementations)
+    - [Extract the call to the code under test to its own method](#extract-the-call-to-the-code-under-test-to-its-own-method)
+  - [Injection](#injection)
+    - [Use dependency inversion to inject test doubles](#use-dependency-inversion-to-inject-test-doubles)
+    - [Consider to use the tool ABAP test double](#consider-to-use-the-tool-abap-test-double)
+    - [Exploit the test tools](#exploit-the-test-tools)
+    - [Use test seams as temporary workaround](#use-test-seams-as-temporary-workaround)
+    - [Use LOCAL FRIENDS to access the dependency-inverting constructor](#use-local-friends-to-access-the-dependency-inverting-constructor)
+    - [Don't misuse LOCAL FRIENDS to invade the tested code](#dont-misuse-local-friends-to-invade-the-tested-code)
+    - [Don't change the productive code to make the code testable](#dont-change-the-productive-code-to-make-the-code-testable)
+    - [Don't sub-class to mock methods](#dont-sub-class-to-mock-methods)
+    - [Don't mock stuff that's not needed](#dont-mock-stuff-thats-not-needed)
+    - [Don't build test frameworks](#dont-build-test-frameworks)
+  - [Test Methods](#test-methods)
+    - [Test method names: reflect what's given and expected](#test-method-names-reflect-whats-given-and-expected)
+    - [Use given-when-then](#use-given-when-then)
+    - ["When" is exactly one call](#when-is-exactly-one-call)
+    - [Don't add a TEARDOWN unless you really need it](#dont-add-a-teardown-unless-you-really-need-it)
+  - [Test Data](#test-data)
+    - [Make it easy to spot meaning](#make-it-easy-to-spot-meaning)
+    - [Make it easy to spot differences](#make-it-easy-to-spot-differences)
+    - [Use constants to describe purpose and importance of test data](#use-constants-to-describe-purpose-and-importance-of-test-data)
+  - [Assertions](#assertions)
+    - [Few, focused assertions](#few-focused-assertions)
+    - [Use the right assert type](#use-the-right-assert-type)
+    - [Assert content, not quantity](#assert-content-not-quantity)
+    - [Assert quality, not content](#assert-quality-not-content)
+    - [Use FAIL to check for expected exceptions](#use-fail-to-check-for-expected-exceptions)
+    - [Forward unexpected exceptions instead of catching and failing](#forward-unexpected-exceptions-instead-of-catching-and-failing)
+    - [Write custom asserts to shorten code and avoid duplication](#write-custom-asserts-to-shorten-code-and-avoid-duplication)
 
-## 做法
+## How to
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#做法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#how-to)
 
-### 整洁代码入门之法
+### How to Get Started with Clean Code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [做法](#做法) > [本节](#整洁代码入门之法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [How to](#how-to) > [This section](#how-to-get-started-with-clean-code)
 
-如果您初识整洁代码，应首先阅读 [Robert C. Martin 所著的 _Clean Code_]。借助 [Clean Code Developer initiative](https://clean-code-developer.com/)，您可以从头学起，循序渐进地对该主题有一般性的了解。
+If you are new to Clean Code, you should first
+read [Robert C. Martin's _Clean Code_].
+The [Clean Code Developer initiative](https://clean-code-developer.com/)
+may help you getting started with a didactically smooth stepwise introduction to the topic in general.
 
-建议从容易理解且广为接受的方面入手，如[布尔值](#布尔值)、[条件](#条件)和 [If 语句](#if-语句)。
+We recommend you to start with things that are easily understood and broadly accepted,
+such as [Booleans](#booleans), [Conditions](#conditions), and [Ifs](#ifs).
 
-您可能将会从[方法](#方法)一节获得最大受益，特别是[做且仅做一件事，把它做好](#做且仅做一件事把它做好)和[方法精简](#保持方法精简)，因为这些会极大地改善代码的总体结构。
+You will probably benefit most from the section [Methods](#methods),
+especially [Do one thing, do it well, do it only](#do-one-thing-do-it-well-do-it-only) and [Small](#keep-methods-small),
+because these tremendously improve the overall structure of your code.
 
-对于有行事经验但初识整洁代码的团队，本文的某些主题可能会引起团队内激烈的讨论；这些主题绝对“有益健康”，但人们可能刚开始不太适应。
+Some topics in here can spark difficult discussions in teams
+that are experienced in what they do but new to Clean Code;
+these topics are perfectly "healthy", but people may have problems
+making themselves comfortable with them in the beginning.
 
-后面会再继续探讨这些颇具争议的主题，特别是[注释](#注释)、[名称](#名称)和[格式化](#格式化)，它们可能会引起孜孜不倦的争论，只有认识到整洁代码积极效应的团队才知道它的好处。
+Continue to these more controversial topics later;
+especially [Comments](#comments), [Names](#names), and [Formatting](#formatting)
+can lead to near-religious disputes
+and should only be addressed by teams that already saw proof of Clean Code's positive effects.
 
-### 旧代码重构之法
+### How to Refactor Legacy Code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [做法](#做法) > [本节](#旧代码重构之法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [How to](#how-to) > [This section](#how-to-refactor-legacy-code)
 
-如果正在遗留项目上工作，其中含有大量无法或不想更改的代码，因为它们可以无冲突地运行在新代码环境，这种情况下， 更改[布尔值](#布尔值)、[条件](#条件)、[If 语句](#if-语句)和[方法](#方法)方面的主题最有价值。
+The topics [Booleans](#booleans), [Conditions](#conditions), [Ifs](#ifs),
+and [Methods](#methods) are most rewarding if you are working on a legacy project
+with tons of code that you cannot or do not want to change
+because they can be applied to new code without conflicts.
 
-对于遗留项目而言， [名称](#名称) 主题改进太费劲了，它可能会在新旧代码之间产生差异，在某种程度上，其中的诸如[避免编码，特别是匈牙利表示法和前缀](#避免编码特别是匈牙利表示法和前缀)等节忽略为宜。
+The topic [Names](#names) is very demanding for legacy projects,
+as it may introduce a breach between old and new code,
+up to a degree where sections like
+[Avoid encodings, esp. Hungarian notation and prefixes](#avoid-encodings-esp-hungarian-notation-and-prefixes)
+are better ignored.
 
-我们发现采用四步计划进行重构，结果比较好：
+Try not to mix different development styles within the same
+development object when carrying out a refactoring. If the
+legacy code contains only up-front declarations, and a complete
+refactoring into using inline declarations is not feasible, it
+is probably better to stick with the legacy style rather than
+mixing the two styles. There are several similar situations
+where mixing styles could cause confusion, for example:
 
-1. 先让团队上道。沟通并解释新的风格，使项目团队的每个人对此达成一致意见。不用一下子就推行所有指导原则，只需从小部分没有争议的子集入手，然后由此拓展。
+- Mixing `REF TO` and `FIELD-SYMBOL` when looping.
+- Mixing `NEW` and `CREATE OBJECT` when calling a `CONSTRUCTOR`.
+- Mixing `RETURNING` and `EXPORTING` in the method signatures of
+methods only returning / exporting one parameter.
 
-2. 按照_童子军规则_开展每日的例行工作：_每次修改代码都比原先更整洁_。不要因此而困扰，好几个小时沉湎于“清理整个营地”，只需花几分钟，思考如何持续不断地改进。
+We observed good results with a four-step plan for refactoring:
 
-3. 构筑_整洁小岛_：时不时挑选小的对象或组件，试着进行全方位的清洁。这些小岛印证了现在所做事情的好处，为进一步重构形成了经得起考验的坚强堡垒。
+1. Get the team aboard. Communicate and explain the new style,
+and get everybody on the project team to agree to it.
+You don't need to commit all guidelines at once, just start
+with an undisputed small subset and evolve from there.
 
-4. 谈经论道。不管是设立老派的[范根代码评审](https://en.wikipedia.org/wiki/Fagan_inspection)，还是举办宣讲会，抑或是在自己喜爱的聊天工具中组建讨论板：需要讲出自己的经验和体会，以使团队逐渐达成共识。
+2. Follow the _boy scout rule_ to your daily work routine:
+_always leave the code you edit a little cleaner than you found it_.
+Don't obsess with this by sinking hours into "cleaning the campsite",
+just spend a couple of minutes extra and observe how the
+improvements accumulate over time.
 
-### 自动检查之法
+3. Build _clean islands_: from time to time, pick a small object or component and
+try to make it clean in all aspects. These islands demonstrate the benefit
+of what you're doing and form solidly tested home bases for further refactoring.
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [做法](#做法) > [本节](#自动检查之法)
+4. Talk about it. No matter whether you set up old-school [Fagan code reviews](https://en.wikipedia.org/wiki/Fagan_inspection),
+hold info sessions, or form discussion boards in your favorite chat tool:
+you will need to talk about your experiences and learnings, to enable the
+team to grow a common understanding.
 
-没有一整套全面的静态代码检查方法可以自动检测本文所述的我们这里所描述的反面模式。
+### How to Check Automatically
 
-ABAP 测试主控室、代码分析器、扩展检查和检查管理器提供了一些检查方法，这些方法可能有助于发现某些问题。
+> [Clean ABAP](#clean-abap) > [Content](#content) > [How to](#how-to) > [This section](#how-to-check-automatically)
 
-[abapOpenChecks](https://github.com/larshp/abapOpenChecks) 是一个开源的代码分析器检查集，也涵盖了所述的某些反面模式。
+[code pal for ABAP](https://github.com/SAP/code-pal-for-abap)
+provides a comprehensive suite of automatic checks for Clean ABAP.
 
-[abaplint](https://github.com/abaplint/abaplint) 是 一个ABAP 解析器的开源的实现重写。它不需要SAP系统就可以运行，旨在用 abapGit 使代码串行化。它提供了多个集成（GitHub Actions、Jenkins、文本编辑器...），涵盖了某些反面模式，也可用来检查格式化和代码规范。
+ABAP Test Cockpit, Code Inspector, Extended Check, and Checkman provide
+some checks that may help you find certain issues.
 
-### 与其他指南互通之法
+[abapOpenChecks](https://github.com/larshp/abapOpenChecks),
+an Open Source collection of Code Inspector checks,
+also covers some of the described anti-patterns.
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [做法](#做法) > [本节](#与其他指南互通之法)
+[abaplint](https://github.com/abaplint/abaplint) is an open source reimplementation of the ABAP parser. It works without a SAP system and is meant to be used on code serialized using abapGit. It offers multiple integrations (GitHub Actions, Jenkins, text editors...), covers some of the antipatterns and can also be used to check formatting and code conventions.
 
-本指南秉承整洁代码的_精神_，这意味着我们对 ABAP 编程语言进行了一些调整，例如，[针对可管理的异常抛出 CX_STATIC_CHECK](#针对可应对的异常抛出-cx_static_check)。
+### How to Relate to Other Guides
 
-某些论据来自 [ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenabap_pgl.htm) 与本指南大多是兼容的；背离之处予以指明，务求符合整洁代码的精神。
+> [Clean ABAP](#clean-abap) > [Content](#content) > [How to](#how-to) > [This section](#how-to-relate-to-other-guides)
 
-本指南也遵循 [DSAG's Recommendations for ABAP Development](https://www.dsag.de/sites/default/files/2020-12/dsag_recommendation_abap_development.pdf)，不过我们在大多数细节上更加精确。
+Our guide follows the _spirit_ of Clean Code,
+meaning we adjusted some things to the ABAP programming language
+e.g. [Throw CX_STATIC_CHECK for manageable exceptions](#throw-cx_static_check-for-manageable-exceptions).
 
-### 表示异议之法
+Some facts are from the
+[ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenabap_pgl.htm),
+which this guide is mostly compatible to; deviations are indicated and always in the spirit of cleaner code.
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [做法](#做法) > [本节](#表示异议之法)
+This guide also respects the
+[DSAG's Recommendations for ABAP Development](https://www.dsag.de/sites/default/files/2020-12/dsag_recommendation_abap_development.pdf),
+although we are more precise in most details.
 
-编写本风格指南的目标读者已通晓整洁代码或目前正致力于此，且对如何将整洁代码_具体应用于 ABAP_ 极为关注。
+Since its publication, Clean ABAP has become a reference guide
+for many of SAP's in-house development teams,
+including the several hundred coders that work on S/4HANA.
 
-因此，请注意，我们没有以原书同样的篇幅和深度介绍所有概念及相关资源：那些内容仍值得一读，特别是，如果您只是因为我们没解释太详细而不同意本文的观点。可使用各节中的链接延伸阅读我们给出指导的背景。
+### How to Disagree
 
-您尽可以讨论文本讲述的任何内容并表示异议。整洁代码的支柱之一是_团队规则_。在您放弃异议之前，一定要给它们一个公平的机会。
+> [Clean ABAP](#clean-abap) > [Content](#content) > [How to](#how-to) > [This section](#how-to-disagree)
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) 就如何变通本指南或在小的细节上另辟蹊径，给出了建议。
+We wrote this style guide for readers who are already acquainted with Clean Code or who are right now working on that,
+with a strong focus on how to apply Clean Code _specifically to ABAP_.
 
-## 名称
+Please mind that we therefore did not introduce all concepts in the same length and depth
+as the original book and related resources: these are still worth a read,
+especially if you disagree with things in here just because we didn't explain them very well.
+Use the links in the sections to read up on the background of our guidance.
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#名称)
+You are free to discuss and disagree with anything we say here.
+One of the pillars of Clean Code is that _the team rules_.
+Just be sure to give things a fair chance before you discard them.
 
-### 使用描述性名称
+[CONTRIBUTING.md](../CONTRIBUTING.md) suggests ways how you can change this guide or deviate from it in minor details.
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#使用描述性名称)
+## Names
 
-使用可以传达事物内容和含义的名称。
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#names)
+
+### Use descriptive names
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-descriptive-names)
+
+Use names that convey the content and meaning of things.
 
 ```ABAP
 CONSTANTS max_wait_time_in_seconds TYPE i ...
@@ -329,7 +394,8 @@ METHODS read_user_preferences ...
 CLASS /clean/user_preference_reader ...
 ```
 
-不要只把注意力放在数据类型和技术编码上。它们对理解代码几乎没什么贡献。
+Do not focus on the data type or technical encoding.
+They hardly contribute to understanding the code.
 
 ```ABAP
 " anti-pattern
@@ -339,67 +405,86 @@ METHODS read_t005 ...
 CLASS /dirty/t005_reader ...
 ```
 
-[不要试图通过注释来弥补坏的名称。](#注释绝非坏名称的借口)
+[Do not attempt to fix bad names by comments.](#comments-are-no-excuse-for-bad-names)
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Use Intention-Revealing Names_。
+> Read more in _Chapter 2: Meaningful Names: Use Intention-Revealing Names_ of [Robert C. Martin's _Clean Code_].
 
-### 首选解决方案域和问题域术语
+### Prefer solution domain and problem domain terms
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#首选解决方案域和问题域术语)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#prefer-solution-domain-and-problem-domain-terms)
 
-在解决方案域（即计算机科学术语，如 "queue" 或 "tree"）和问题域（即业务领域术语，如 "account" 或 "ledger"）中搜索好的名称。
+Search for good names in the solution domain, i.e. computer science terms such as "queue" or "tree",
+and in the problem domain, i.e. business field terms such as "account" or "ledger".
 
-按问题域命名时，业务层的命名最好听。对于采用域驱动设计而设计的组件（如 API 和业务对象）尤为如此。
+Layers that are business-like will sound best when named according to the problem domain.
+This is especially true for components that are designed with Domain-Driven Design, such as APIs and business objects.
 
-按解决方案域命名时，提供大多数技术功能（如工厂类和抽象算法）层的命名最好听。
+Layers that provide mostly technical functionality, such as factory classes and abstract algorithms,
+will sound best when named according to the solution domain.
 
-在任何情况下都不要试图加进自己的语言。需能够在开发人员、产品负责人、合作伙伴和客户之间交换信息，因此要选择所有人不用查定制词典就能理解的名称。
+In any case, do not attempt to make up your own language.
+We need to be able to exchange information between developers, product owners, partners and customers,
+so choose names that all of these can relate to without a customized dictionary.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Use Solution Domain Names_ and _[...]: > Use Problem Domain Names_。
+> Read more in _Chapter 2: Meaningful Names: Use Solution Domain Names_ and _[...]:
+> Use Problem Domain Names_ of [Robert C. Martin's _Clean Code_].
 
-### 使用复数形式
+### Use plural
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#使用复数形式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-plural)
 
-在 SAP 有一种传统习惯，那就是用单数形式命名事物的表，例如，`country` 表示“国家表”。外界普遍倾向于使用复数形式表示事物的列表。因此，建议最好改用 `countries`。
+There is a legacy practice at SAP to name tables of things in singular,
+for example `country` for a "table of countries".
+Common tendency in the outside world is to use the plural for lists of things.
+We therefore recommend to prefer `countries` instead.
 
-> 这条建议主要针对诸如变量和属性等事物。> 对于开发对象，可能存在同样> 也有意义的模式，例如，有一种广泛使用的规范，> 以单数形式命名数据库表（“透明表”）。
+> This advice primarily targets things like variables and properties.
+> For development objects, there may be competing patterns
+> that also make sense, for example the widely used convention
+> to name database tables ("transparent tables") in singular.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Use Intention-Revealing Names_。
+> Read more in _Chapter 2: Meaningful Names: Use Intention-Revealing Names_ of [Robert C. Martin's _Clean Code_].
 
-### 使用能读出来的名称
+### Use pronounceable names
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#使用能读出来的名称)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-pronounceable-names)
 
-关于对象会有很多思考和讨论，因此要使用能读出来的名称，例如，`detection_object_types` 优于诸如 `dobjt` 这种晦涩的名称。
+We think and talk a lot about objects, so use names that you can pronounce,
+for example prefer `detection_object_types` to something cryptic like `dobjt`.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Use Pronounceable Names_。
+> Read more in _Chapter 2: Meaningful Names: Use Pronounceable Names_ of [Robert C. Martin's _Clean Code_]
 
-### 避免缩写
+### Avoid abbreviations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#避免缩写)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#avoid-abbreviations)
 
-如果有足够空间，那就完整地写出名称。仅当超过长度限制时才使用缩写。
+If you have enough space, write out names in full.
+Start abbreviating only if you exceed length limitations.
 
-如果不得不缩写，首先考虑_不重要_的词。
+If you do have to abbreviate, start with the _unimportant_ words.
 
-采用缩写，可能第一眼看起来很高效，但很快就会变得含糊不清。例如，`cust` 中的 "cust" 究竟是指 "customizing"、"customer" 还是 "custom"？三者在 SAP 应用程序中都很常见。
+Abbreviating things may appear efficient at first glance, but becomes ambiguous very fast.
+For example, does the "cust" in `cust` mean "customizing", "customer", or "custom"?
+All three are common in SAP applications.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Make Meaningful Distinctions_。
+> Read more in _Chapter 2: Meaningful Names: Make Meaningful Distinctions_ of [Robert C. Martin's _Clean Code_].
 
-### 在各处使用相同缩写
+### Use same abbreviations everywhere
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#在各处使用相同缩写)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-same-abbreviations-everywhere)
 
-人们会搜索关键字来查找相关代码。为此，应对相同事物使用相同缩写。例如，始终将 "detection object type" 缩写为 "dobjt"，而不是混合使用 "dot"、"dotype"、"detobjtype" 等等。
+People will search for keywords to find relevant code.
+Support this by using the same abbreviation for the same thing.
+For example, always abbreviate "detection object type" to "dobjt"
+instead of mixing "dot", "dotype", "detobjtype" and so on.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Use Searchable Names_。
+> Read more in _Chapter 2: Meaningful Names: Use Searchable Names_ of [Robert C. Martin's _Clean Code_].
 
-### 用名词表示类而用动词表示方法
+### Use nouns for classes and verbs for methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#用名词表示类而用动词表示方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-nouns-for-classes-and-verbs-for-methods)
 
-使用名词或名词词组命名类、接口和对象：
+Use nouns or noun phrases to name classes, interfaces, and objects:
 
 ```ABAP
 CLASS /clean/account
@@ -407,7 +492,7 @@ CLASS /clean/user_preferences
 INTERFACE /clean/customizing_reader
 ```
 
-使用动词或动词词组命名方法：
+Use verbs or verb phrases to name methods:
 
 ```ABAP
 METHODS withdraw
@@ -415,41 +500,41 @@ METHODS add_message
 METHODS read_entries
 ```
 
-用诸如 `is_` 和 `has_` 之类的动词作为布尔方法的开头，读起来会很流畅：
+Starting Boolean methods with verbs like `is_` and `has_` yields nice reading flow:
 
 ```ABAP
 IF is_empty( table ).
 ```
 
-建议也像方法一样给函数命名：
+We recommend naming functions like methods:
 
 ```ABAP
 FUNCTION /clean/read_alerts
 ```
 
-### 避免干扰词，如 "data"、"info"、"object"
+### Avoid noise words such as "data", "info", "object"
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#避免干扰词如-datainfoobject)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#avoid-noise-words-such-as-data-info-object)
 
-省略干扰词
+Omit noise words
 
 ```ABAP
 account  " instead of account_data
 alert    " instead of alert_object
 ```
 
-或将其替换为某些确实更有价值的特定字眼
+or replace them with something specific that really adds value
 
 ```ABAP
 user_preferences          " instead of user_info
 response_time_in_seconds  " instead of response_time_variable
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Make Meaningful Distinctions_
+> Read more in _Chapter 2: Meaningful Names: Make Meaningful Distinctions_ of [Robert C. Martin's _Clean Code_]
 
-### 每个概念选取一个词
+### Pick one word per concept
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#每个概念选取一个词)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#pick-one-word-per-concept)
 
 ```ABAP
 METHODS read_this.
@@ -457,7 +542,8 @@ METHODS read_that.
 METHODS read_those.
 ```
 
-为一个概念选择一个术语并坚持使用；不要混合使用其他同义词。同义词会使读者浪费时间查找本不存在的差异。
+Choose a term for a concept and stick to it; don't mix in other synonyms.
+Synonyms will make the reader waste time on finding a difference that's not there.
 
 ```ABAP
 " anti-pattern
@@ -466,21 +552,31 @@ METHODS retrieve_that.
 METHODS query_those.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Pick One Word per Concept_
+> Read more in _Chapter 2: Meaningful Names: Pick One Word per Concept_ of [Robert C. Martin's _Clean Code_]
 
-### 仅在本意如此时使用模式名称
+### Use pattern names only if you mean them
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#仅在本意如此时使用模式名称)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#use-pattern-names-only-if-you-mean-them)
 
-不要对类和接口使用软件设计模式的名称，除非本意真的如此。例如，不要将类称为 `file_factory`，除非它的确实施了工厂设计模式。最常见的模式包括：[singleton](https://en.wikipedia.org/wiki/Singleton_pattern)、[factory](https://en.wikipedia.org/wiki/Factory_method_pattern)、[facade](https://en.wikipedia.org/wiki/Facade_pattern)、[composite](https://en.wikipedia.org/wiki/Composite_pattern)、[decorator](https://en.wikipedia.org/wiki/Decorator_pattern)、[iterator](https://en.wikipedia.org/wiki/Iterator_pattern)、[observer](https://en.wikipedia.org/wiki/Observer_pattern) 和 [strategy](https://en.wikipedia.org/wiki/Strategy_pattern)。
+Don't use the names of software design patterns for classes and interfaces unless you really mean them.
+For example, don't call your class `file_factory` unless it really implements the factory design pattern.
+The most common patterns include:
+[singleton](https://en.wikipedia.org/wiki/Singleton_pattern),
+[factory](https://en.wikipedia.org/wiki/Factory_method_pattern),
+[facade](https://en.wikipedia.org/wiki/Facade_pattern),
+[composite](https://en.wikipedia.org/wiki/Composite_pattern),
+[decorator](https://en.wikipedia.org/wiki/Decorator_pattern),
+[iterator](https://en.wikipedia.org/wiki/Iterator_pattern),
+[observer](https://en.wikipedia.org/wiki/Observer_pattern), and
+[strategy](https://en.wikipedia.org/wiki/Strategy_pattern).
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 2: Meaningful Names: Avoid Disinformation_
+> Read more in _Chapter 2: Meaningful Names: Avoid Disinformation_ of [Robert C. Martin's _Clean Code_]
 
-### 避免编码，特别是匈牙利表示法和前缀
+### Avoid encodings, esp. Hungarian notation and prefixes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [名称](#名称) > [本节](#避免编码特别是匈牙利表示法和前缀)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Names](#names) > [This section](#avoid-encodings-esp-hungarian-notation-and-prefixes)
 
-鼓励丢掉_所有_编码前缀。
+We encourage you to get rid of _all_ encoding prefixes.
 
 ```ABAP
 METHOD add_two_numbers.
@@ -488,7 +584,7 @@ METHOD add_two_numbers.
 ENDMETHOD.
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 METHOD add_two_numbers.
@@ -496,39 +592,64 @@ METHOD add_two_numbers.
 ENDMETHOD.
 ```
 
-> [Avoid Encodings](sub-sections/AvoidEncodings.md) > 深入介绍了这样做的理由。
+> [Avoid Encodings](sub-sections/AvoidEncodings.md)
+> describes the reasoning in depth.
 
-## 语言
+## Language
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#语言)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#language)
 
-### 顾及传统
+### Mind the legacy
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#顾及传统)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#mind-the-legacy)
 
-如果是针对较早的 ABAP 版本进行编码，则应谨慎采纳本指南中的建议：下文的许多建议利用了相对较新的语法和结构，这些在较早的 ABAP 版本中可能不受支持。在必须支持的最早版本上验证欲遵循的指导原则。不要简单地整个抛弃整洁代码 - 绝大多数规则（例如，命名、注释）在_任何_ ABAP 版本中都行得通。
+If you code for older ABAP releases, take the advice in this guide with care:
+Many recommendations below make use of relatively new syntax and constructs
+that may not be supported in older ABAP releases.
+Validate the guidelines you want to follow on the oldest release you must support.
+Do not simply discard Clean Code as a whole -
+the vast majority of rules (e.g. naming, commenting) will work in _any_ ABAP version.
 
-### 顾及性能
+### Mind the performance
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#顾及性能)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#mind-the-performance)
 
-如果是为高性能组件编码，则应谨慎采纳本指南中的建议：整洁代码在某些方面可能会降低速度（更多方法调用）或消耗更多内存（更多对象）。ABAP 的某些特点可能会加剧这种情况，例如，在调用方法时，它会比较数据类型，这样一来，将单个大方法拆分成多个子方法，可能会降低代码速度。
+If you code high performance components, take the advice in this guide with care:
+Some aspects of Clean Code may make things slower (more method calls) or consume more memory (more objects).
+ABAP has some specialties that may intensify this, for example it compares data types when calling a method,
+such that splitting a single large method into many sub-methods may make the code slower.
 
-然而，强烈建议不要因为模糊的恐惧就过早地悲观失望。绝大多数规则（例如，命名、注释）根本不会产生任何负面影响。尽力采用整洁的面向对象的方式做事情。如果有什么过慢，就做一个性能测量。只有这样做之后，才应根据事实作出决策，放弃所选规则。
+However, we strongly recommend to not optimize prematurely, based on obscure fears.
+The vast majority of rules (e.g. naming, commenting) has no negative impact at all.
+Try to build things in a clean, object-oriented way.
+If something is too slow, make a performance measurement.
+Only then should you take a fact-based decision to discard selected rules.
 
-一些更深入的思考，部分取自 [Martin Fowler 所著的 _Refactoring_](https://martinfowler.com/books/refactoring.html) 中的第 2 章：
+Some further thoughts, taken in part from Chapter 2 of
+[Martin Fowler's _Refactoring_](https://martinfowler.com/books/refactoring.html):
 
-在典型的应用程序中，大部分运行时间都花在很小比例的代码中。小到 10% 的代码会占到 90% 的运行时间，特别是在 ABAP 中，很大比例的运行时间可能都是数据库时间。
+In a typical application the majority of the runtime is spent in a very small proportion
+of the code. As little as 10% of the code can account for 90% of the runtime, and especially
+in ABAP a large proportion of runtime is likely to be database time.
 
-因此，花大力气试图使_所有_代码都一直保持超高效率，并非最好的资源安排方式。不主张忽视性能，但在初始开发阶段，应该更关注代码的整洁性和条理分明的程度，然后使用剖析器找出关键区域进行优化。
+Thus it is not the best use of resources to spend significant effort on trying to make _all_
+code super-efficient all the time. We're not suggesting ignoring performance, but rather
+focus more on clean and well structured code during initial development, and use the
+profiler to identify critical areas to optimize.
 
-事实上，我们有理由证明，这种方式对性能的正面影响更大，因为优化努力更有针对性，更容易找出性能瓶颈，而且条理分明的代码更容易进行重构和调优。
+In fact, we would argue that such an approach will have a net positive effect on performance
+because it is a more targeted optimization effort, and it should be easier
+to identify performance bottlenecks and easier to refactor and tune well structured code.
 
-### 面向对象编程优于过程式编程
+### Prefer object orientation to procedural programming
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#面向对象编程优于过程式编程)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#prefer-object-orientation-to-procedural-programming)
 
-面向对象的程序（类、接口）比过程式代码（函数、程序）分段更清晰，并且可以更加容易地进行重构和测试。尽管在某些情况下必须提供过程式对象（对 RFC 用函数、对事务用程序），但这些对象除了调用提供实际功能的相应类之外，不应该再干别的：
+Object-oriented programs (classes, interfaces) are segmented better
+and can be refactored and tested more easily than procedural code (functions, programs).
+Although there are situations where you must provide procedural objects
+(a function for an RFC, a program for a transaction),
+these objects should do little more than call a corresponding class that provides the actual feature:
 
 ```ABAP
 FUNCTION check_business_partner [...].
@@ -537,13 +658,14 @@ FUNCTION check_business_partner [...].
 ENDFUNCTION.
 ```
 
-> [Function Groups vs. Classes](sub-sections/FunctionGroupsVsClasses.md) > 详细描述了两者的差异。
+> [Function Groups vs. Classes](sub-sections/FunctionGroupsVsClasses.md)
+> describes the differences in detail.
 
-### 函数式语言结构优于过程式语言结构
+### Prefer functional to procedural language constructs
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#函数式语言结构优于过程式语言结构)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#prefer-functional-to-procedural-language-constructs)
 
-它们通常更加简短，而且更容易为现代程序员所接受。
+They are usually shorter and come more natural to modern programmers.
 
 ```ABAP
 DATA(variable) = 'A'.
@@ -564,7 +686,8 @@ result = VALUE #( FOR row IN input ( row-text ) ).
 "  INSERT row-text INTO TABLE result.
 " ENDLOOP.
 
-DATA(line) = value_pairs[ name = 'A' ].
+DATA(line) = value_pairs[ name = 'A' ]. " entry must exist
+DATA(line) = VALUE #( value_pairs[ name = 'A' ] OPTIONAL ). " entry can be missing
 " READ TABLE value_pairs INTO DATA(line) WITH KEY name = 'A'.
 
 DATA(exists) = xsdbool( line_exists( value_pairs[ name = 'A' ] ) ).
@@ -573,15 +696,19 @@ IF line_exists( value_pairs[ name = 'A' ] ).
 " DATA(exists) = xsdbool( sy-subrc = 0 ).
 ```
 
-下文的许多详细规则只不过是具体重申了这条通用的建议。
+Many of the detailed rules below are just specific reiterations of this general advice.
 
-### 避免过时语言元素
+### Avoid obsolete language elements
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#避免过时语言元素)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#avoid-obsolete-language-elements)
 
-在升级 ABAP 版本时，务必要检查是否有过时的语言元素，避免再使用它们。
+When upgrading your ABAP version,
+make sure to check for obsolete language elements
+and refrain from using them.
 
-例如，以下语句中 `@` 转义的 "host" 变量更清楚地表明了什么是程序变量、什么是数据库中的列，
+For example, the `@`-escaped "host" variables
+in the following statement make a little clearer
+what's a program variable and what's a column in the database,
 
 ```ABAP
 SELECT *
@@ -591,7 +718,7 @@ SELECT *
   INTO TABLE @itab.
 ```
 
-相较于[过时的转义形式](https://help.sap.com/doc/abapdocu_750_index_htm/7.50/en-US/abenopen_sql_hostvar_obsolete.htm)
+as compared to the [obsolete unescaped form](https://help.sap.com/doc/abapdocu_750_index_htm/7.50/en-US/abenopen_sql_hostvar_obsolete.htm)
 
 ```ABAP
 SELECT *
@@ -601,44 +728,56 @@ SELECT *
   INTO TABLE itab.
 ```
 
-较新的可选方案倾向于提高代码的可读性，减少与现代编程范式的设计冲突，这样切换到这些方案时就会自动使代码更整洁。
+Newer alternatives tend to improve readability of the code,
+and reduce design conflicts with modern programming paradigms,
+such that switching to them can automatically clean your code.
 
-如果继续使用旧代码编写方式，过时元素可能在处理速度和内存消耗方面无法再从优化中受益。
+While continuing to work, obsolete elements may stop benefitting
+from optimizations in terms of processing speed and memory consumption.
 
-使用现代语言元素，可以更轻松地将年轻的 ABAP 程序员带上道，由于在 SAP 的培训中不再教授过时内容，他们可能不再熟悉过时的结构。
+With modern language elements, you can onboard young ABAPers easier,
+who may no longer be familiar with the outdated constructs
+because they are no longer taught in SAP's trainings.
 
-SAP NetWeaver 文档固定包含一部分，其中列出了过时的语言元素，例如，[NW 7.50](https://help.sap.com/doc/abapdocu_750_index_htm/7.50/en-US/index.htm?file=abenabap_obsolete.htm)、[NW 7.51](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenabap_obsolete.htm)、[NW 7.52](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/index.htm?file=abenabap_obsolete.htm)、[NW 7.53](https://help.sap.com/doc/abapdocu_753_index_htm/7.53/en-US/index.htm?file=abenabap_obsolete.htm)。
+The SAP NetWeaver documentation contains a stable section
+that lists obsolete language elements, for example
+[NW 7.50](https://help.sap.com/doc/abapdocu_750_index_htm/7.50/en-US/index.htm?file=abenabap_obsolete.htm),
+[NW 7.51](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenabap_obsolete.htm),
+[NW 7.52](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/index.htm?file=abenabap_obsolete.htm),
+[NW 7.53](https://help.sap.com/doc/abapdocu_753_index_htm/7.53/en-US/index.htm?file=abenabap_obsolete.htm).
 
-### 明智地使用设计模式
+### Use design patterns wisely
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [语言](#语言) > [本节](#明智地使用设计模式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Language](#language) > [This section](#use-design-patterns-wisely)
 
-仅在合适且有明显好处的地方使用。不要为了使用而到处用设计模式。
+Where they are appropriate and provide noticeable benefit.
+Don't apply design patterns everywhere just for the sake of it.
 
-## 常量
+## Constants
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#常量)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#constants)
 
-### 使用常量而非幻数
+### Use constants instead of magic numbers
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [常量](#常量) > [本节](#使用常量而非幻数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Constants](#constants) > [This section](#use-constants-instead-of-magic-numbers)
 
 ```ABAP
 IF abap_type = cl_abap_typedescr=>typekind_date.
 ```
 
-在清晰方面好于
+is clearer than
 
 ```ABAP
 " anti-pattern
 IF abap_type = 'D'.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 17: Smells and Heuristics: G25: > Replace Magic Numbers with Named Constants_。
+> Read more in _Chapter 17: Smells and Heuristics: G25:
+> Replace Magic Numbers with Named Constants_ of [Robert C. Martin's _Clean Code_].
 
-### 枚举类优于常量接口
+### Prefer enumeration classes to constants interfaces
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [常量](#常量) > [本节](#枚举类优于常量接口)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Constants](#constants) > [This section](#prefer-enumeration-classes-to-constants-interfaces)
 
 ```ABAP
 CLASS /clean/message_severity DEFINITION PUBLIC ABSTRACT FINAL.
@@ -649,7 +788,7 @@ CLASS /clean/message_severity DEFINITION PUBLIC ABSTRACT FINAL.
 ENDCLASS.
 ```
 
-或
+or
 
 ```ABAP
 CLASS /clean/message_severity DEFINITION PUBLIC CREATE PRIVATE FINAL.
@@ -661,7 +800,9 @@ CLASS /clean/message_severity DEFINITION PUBLIC CREATE PRIVATE FINAL.
 ENDCLASS.
 ```
 
-而不是将不相关的东西混在一起
+instead of mixing unrelated things
+or misleading people to the conclusion
+that constants collections could be "implemented":
 
 ```ABAP
 " anti-pattern
@@ -674,15 +815,17 @@ INTERFACE /dirty/common_constants.
 ENDINTERFACE.
 ```
 
-> [Enumerations](sub-sections/Enumerations.md) > 描述了常见的枚举模式> 并讨论了它们的优缺点。
-> 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 17: Smells and Heuristics: J3: Constants versus Enums_。
+> [Enumerations](sub-sections/Enumerations.md)
+> describes common enumeration patterns
+> and discusses their advantages and disadvantages.
+>
+> Read more in _Chapter 17: Smells and Heuristics: J3: Constants versus Enums_ of [Robert C. Martin's _Clean Code_].
 
-### 如果不使用枚举类，则对常量进行分组
+### If you don't use enumeration classes, group your constants
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [常量](#常量) > [本节](#如果不使用枚举类则对常量进行分组)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Constants](#constants) > [This section](#if-you-dont-use-enumeration-classes-group-your-constants)
 
-如果以松散方式集合常量，例如，在接口中，则应将其分组：
+If you collect constants in a loose way, for example in an interface, group them:
 
 ```ABAP
 CONSTANTS:
@@ -696,7 +839,7 @@ CONSTANTS:
   END OF message_lifespan.
 ```
 
-使关系更清晰，好于：
+Makes the relation clearer than:
 
 ```ABAP
 " Anti-pattern
@@ -707,29 +850,34 @@ CONSTANTS:
   persisted    TYPE i       VALUE 2,
 ```
 
-利用组还可以成组进行访问，例如，进行输入验证：
+The group also allows you group-wise access, for example for input validation:
 
 ```ABAP
-DO number_of_constants TIMES.
+DO.
   ASSIGN COMPONENT sy-index OF STRUCTURE message_severity TO FIELD-SYMBOL(<constant>).
-  IF <constant> = input.
-    is_valid = abap_true.
+  IF sy-subrc IS INITIAL.
+    IF input = <constant>.
+      DATA(is_valid) = abap_true.
+      RETURN.
+    ENDIF.
+  ELSE.
     RETURN.
   ENDIF.
-ENDWHILE.
+ENDDO.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 17: Smells and Heuristics: G27: Structure over Convention_。
+> Read more in _Chapter 17: Smells and Heuristics: G27: Structure over Convention_ of [Robert C. Martin's _Clean Code_].
 
-## 变量
+## Variables
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#变量)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#variables)
 
-### 内联声明优于最前声明
+### Prefer inline to up-front declarations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [变量](#变量) > [本节](#内联声明优于最前声明)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Variables](#variables) > [This section](#prefer-inline-to-up-front-declarations)
 
-如果遵循本文的指导原则，在首次出现的地方内联式声明变量显得更加自然，方法体也会变得很精短（3-5 条语句）。
+If you follow these guidelines, your methods will become so short (3-5 statements)
+that declaring variables inline at first occurrence will look more natural
 
 ```ABAP
 METHOD do_something.
@@ -739,7 +887,7 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-好过在方法开头单独的 `DATA` 部分声明变量
+than declaring variables with a separate `DATA` section at the beginning of the method
 
 ```ABAP
 " anti-pattern
@@ -753,11 +901,11 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 5: Formatting: Vertical Distance: Variable Declarations_。
+> Read more in _Chapter 5: Formatting: Vertical Distance: Variable Declarations_ of [Robert C. Martin's _Clean Code_].
 
-### 勿在可选分支中内联声明
+### Don't declare inline in optional branches
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [变量](#变量) > [本节](#勿在可选分支中内联声明)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Variables](#variables) > [This section](#dont-declare-inline-in-optional-branches)
 
 ```ABAP
 " anti-pattern
@@ -768,7 +916,10 @@ ELSE.
 ENDIF.
 ```
 
-这样可以正常运行，因为 ABAP 会像声明位于方法开头那样来处理内联式声明。然而，这会令读者感到极其迷惑，特别是方法体较长而又没当场发现声明的话。在此情况下，不要使用内联式声明而将声明放在最前面：
+This works fine because ABAP handles inline declarations as if they were at the beginning of the method.
+However, it is extremely confusing for readers,
+especially if the method is longer and you don't spot the declaration right away.
+In this case, break with inlining and put the declaration up-front:
 
 ```ABAP
 DATA value TYPE i.
@@ -779,47 +930,58 @@ ELSE.
 ENDIF.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 5: Formatting: Vertical Distance: Variable Declarations_。
+> Read more in _Chapter 5: Formatting: Vertical Distance: Variable Declarations_ of [Robert C. Martin's _Clean Code_].
 
-### 勿用链式最前声明
+### Do not chain up-front declarations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [变量](#变量) > [本节](#勿用链式最前声明)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Variables](#variables) > [This section](#do-not-chain-up-front-declarations)
 
 ```ABAP
 DATA name TYPE seoclsname.
-DATA reader TYPE REF TO /dirty/reader.
+DATA reader TYPE REF TO reader.
 ```
 
-链式处理主张在逻辑层级关联定义的变量。为了一致性，必须确保所有链式变量结成一体，要添加变量，就得另外引入链组。尽管这种方法可行，但通常不值得花这个功夫。
+Chaining suggests the defined variables are related on a logical level.
+To consistently use it, you would have to ensure that all chained variables belong together,
+and introduce additional chain groups to add variables.
+While this is possible, it is usually not worth the effort.
 
-另外，链式处理也毫无必要地使重新格式化和重构变得复杂，因为每行看起来都不同，改起来需要四处挪动冒号、句号和逗号，根本不值得花功夫。
+Chaining also needlessly complicates reformatting and refactoring
+because each line looks different and changing them requires meddling with
+colons, dots, and commas, that are not worth the effort.
 
 ```ABAP
 " anti-pattern
 DATA:
   name   TYPE seoclsname,
-  reader TYPE REF TO /dirty/reader.
+  reader TYPE REF TO reader.
 ```
 
-> 另请参阅 [Don't align type clauses](#勿对齐类型子句)
-> 如果使用链式数据声明，则每组结成一体的变量各用一个链。
+> Also refer to [Don't align type clauses](#dont-align-type-clauses)  
+> If chaining of data declaration is used, then use one chain for each group of variables belonging together.
 
-### REF TO 优于 FIELD-SYMBOL
+### Prefer REF TO to FIELD-SYMBOL
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [变量](#变量) > [本节](#ref-to-优于-field-symbol)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Variables](#variables) > [This section](#prefer-ref-to-to-field-symbol)
+
+> This section [is being challenged](https://github.com/SAP/styleguides/issues/115).
+> `FIELD-SYMBOL`s seem to be considerably faster
+> when iterating internal tables,
+> such that the recommendation to use `REF TO`
+> for these cases may worsen performance.
 
 ```ABAP
 LOOP AT components REFERENCE INTO DATA(component).
 ```
 
-而非等效形式
+instead of the equivalent
 
 ```ABAP
 " anti-pattern
 LOOP AT components ASSIGNING FIELD-SYMBOL(<component>).
 ```
 
-需要指针的地方除外
+except where you need field symbols
 
 ```ABAP
 ASSIGN generic->* TO FIELD-SYMBOL(<generic>).
@@ -827,79 +989,110 @@ ASSIGN COMPONENT name OF STRUCTURE structure TO FIELD-SYMBOL(<component>).
 ASSIGN (class_name)=>(static_member) TO FIELD-SYMBOL(<member>).
 ```
 
-从代码评审的经验表明人们往往会随心所欲地做出选择：“就是因为”、“因为我们总是采用那种循环方式”，或者“没特殊原因”。随意选择会令读者把时间浪费在毫无意义的问题上：为什么用这个而不用那个，因此应代之以有理有据、准确无误的决策。我们的建议基于这种理由：
+Code reviews demonstrate that people tend to choose between the two arbitrarily,
+"just because", "because we are always LOOPing that way", or "for no special reason".
+Arbitrary choices make the reader waste time on the pointless question why one is used over the other
+and thus should be replaced with well-founded, precise decisions.
+Our recommendation is based on this reasoning:
 
-- 指针能做一些引用做不了的事情，比如动态访问结构的组成部分。同样，引用也能做指针做不了的事情，比如构造动态类型的数据结构。总之，单独指望一个是不行的。
+- Field symbols can do some things that references cannot, such as dynamically accessing the components of a structure.
+Likewise, references can do things that field symbols can't, such as constructing a dynamically typed data structure.
+In summary, settling for one alone is not possible.
 
-- 在面向对象的 ABAP 中，引用到处都有并且无法避免，因为任何对象皆是 `REF TO <class-name>`。相反，指针仅在涉及动态类型的少数特殊情况下才绝对需要。因此，引用自然成为任何面向对象程序中的首选。
+- In object-oriented ABAP, references are all over the place and cannot be avoided,
+as any object is a `REF TO <class-name>`.
+In contrast, field symbols are only strictly required in few, special cases concerned with dynamic typing.
+References thus form a natural preference in any object-oriented program.
 
-- 指针比引用短，但结果节省的内存却微不足道，尽可以忽略不计。同样，速度也不是问题。因此，在性能方面没理由厚此薄彼。
+- Field symbols are shorter than references, but the resulting memory saving is so tiny that it can be safely neglected.
+Similarly, speed is not an issue. As a consequence, there is no performance-related reason to prefer one to the other.
 
-> 更多信息参阅 > [ABAP Programming Guidelines 中的篇章 _Accessing Data Objects Dynamically_](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abendyn_access_data_obj_guidl.htm)。
+> Read more in the article
+> [_Accessing Data Objects Dynamically_ in the ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abendyn_access_data_obj_guidl.htm).
 
-## 表
+## Tables
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#表)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#tables)
 
-### 使用恰当的表类型
+### Use the right table type
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#使用恰当的表类型)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#use-the-right-table-type)
 
-- `HASHED` 表通常用来表示**单步填充**、**永不修改**且**常按键值读取**的**大表**。其固有的内存和处理开销使得散列表仅在数据量很大且读访问次数很多的情况下才有价值。每次对表内容进行更改，均需要大量重新计算散列值，因此修改过于频繁的表不要使用此种类型。
+- You typically use `HASHED` tables for **large tables**
+that are **filled in a single step**, **never modified**, and **read often by their key**.
+Their inherent memory and processing overhead makes hash tables only valuable
+for large amounts of data and lots of read accesses.
+Each change to the table's content requires expensive recalculation of the hash,
+so don't use this for tables that are modified too often.
 
-- `SORTED` 表通常用于表示需要**时时排序**、**逐位填充**或**需要修改**并且**常按一个或多个完整或部分键值读取**或**以某种特定顺序**处理的**大表**。添加、更改或移除内容，需要找到恰当的插入点，但不需要调整表索引的其余部分。仅对读访问次数很多的情况，有序表才有价值。
+- You typically use `SORTED` tables for **large tables**
+that need to be **sorted at all times**, that are **filled bit by bit** or **need to be modified**,
+and **read often by one or more full or partial keys** or processed **in a certain order**.
+Adding, changing, or removing content requires finding the right insertion spot,
+but doesn't require adjusting the rest of the table's index.
+Sorted tables demonstrate their value only for large numbers of read accesses.
 
-- `STANDARD` 表用于表示索引开销大于索引受益的**小表**，以及或是毫不在乎行顺序或是就想完全按追加顺序进行处理的**“数组”**。另外，也适用于需要对表进行不同访问的情况，例如，通过 `SORT` 和 `BINARY SEARCH` 进行索引访问和排序访问。
+- Use `STANDARD` tables for **small tables**, where indexing produces more overhead than benefit, and **"arrays"**, where you either don't care at all for the order of the rows, or you want to process them in exactly the order they were appended. Also, if different access to the table is needed e.g. indexed access and sorted access via `SORT` and `BINARY SEARCH`.
 
-> 这些只是粗略的指导原则。> 更多细节参见 [ABAP Language Help 中的篇章 _Selection of Table Category_](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abenitab_kind.htm)。
+> These are only rough guidelines.
+> Find more details in the article [_Selection of Table Category_ in the ABAP Language Help](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abenitab_kind.htm).
 
-### 避免 DEFAULT KEY
+### Avoid DEFAULT KEY
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#避免-default-key)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#avoid-default-key)
 
 ```ABAP
 " anti-pattern
 DATA itab TYPE STANDARD TABLE OF row_type WITH DEFAULT KEY.
 ```
 
-添加缺省键值常常只是为了让具有较新功能的语句得以正常工作。事实上，这些键值本身通常是多余的，除了耗费资源，别无它用。由于它们会忽略数值数据类型，因此甚至可能会导致隐蔽的错误。不含显式字段列表的 `SORT` 和 `DELETE ADJACENT` 语句将会转而采用内部表的主键，在使用 `DEFAULT KEY` 的情况下，这可能会导致十分意想不到的结果，例如，当以数值字段作为键值的分量时，特别是当与 `READ TABLE ... BINARY` 等结合使用时。
+Default keys are often only added to get the newer functional statements working.
+The keys themselves in fact are usually superfluous and waste resources for nothing.
+They can even lead to obscure mistakes because they ignore numeric data types.
+The `SORT` and `DELETE ADJACENT` statements without explicit field list will resort to the primary key of the
+ internal table, which in case of usage of `DEFAULT KEY` can lead to very unexpected results when having
+ e.g. numeric fields as component of the key, in particular in combination with `READ TABLE ... BINARY` etc.
 
-要么显式指定键值
+Either specify the key components explicitly
 
 ```ABAP
 DATA itab2 TYPE STANDARD TABLE OF row_type WITH NON-UNIQUE KEY comp1 comp2.
 ```
 
-如果根本不需要键值的话，则采用 `EMPTY KEY`。。
+or resort to `EMPTY KEY` if you don't need a key at all.
 
 ```ABAP
 DATA itab1 TYPE STANDARD TABLE OF row_type WITH EMPTY KEY.
 ```
 
-> 参照 [Horst Keller 的博客文章 _Internal Tables with Empty Key_](https://blogs.sap.com/2013/06/27/abap-news-for-release-740-internal-tables-with-empty-key/)
-> **注意：**具有 `EMPTY KEY` 的内部表上的 `SORT` 根本不会进行排序，> 但假如能静态确定键值为空，就会发出语法警告。
+> Following [Horst Keller's blog on _Internal Tables with Empty Key_](https://blogs.sap.com/2013/06/27/abap-news-for-release-740-internal-tables-with-empty-key/)
+> 
+> **Caution:** `SORT` on internal tables with `EMPTY KEY` (without explicit sort fields) will not sort at all,
+> but syntax warnings are issued in case the key's emptiness can be determined statically.
 
-### INSERT INTO TABLE 优于 APPEND TO
+### Prefer INSERT INTO TABLE to APPEND TO
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#insert-into-table-优于-append-to)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#prefer-insert-into-table-to-append-to)
 
 ```ABAP
 INSERT VALUE #( ... ) INTO TABLE itab.
 ```
 
-`INSERT INTO TABLE` 对所有表和键值类型都起作用，因而更便于在性能需求发生变化时重构表的类型和键值定义。
+`INSERT INTO TABLE` works with all table and key types,
+thus making it easier for you to refactor the table's type and key definitions if your performance requirements change.
 
-仅当以类似数组的方式使用 `STANDARD` 表时才使用 `APPEND TO`，如果想要强调所添加的条目应为最后一行的话。
+Use `APPEND TO` only if you use a `STANDARD` table in an array-like fashion,
+if you want to stress that the added entry shall be the last row.
 
-### LINE_EXISTS 优于 READ TABLE 或 LOOP AT
+### Prefer LINE_EXISTS to READ TABLE or LOOP AT
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#line_exists-优于-read-table-或-loop-at)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#prefer-line_exists-to-read-table-or-loop-at)
 
 ```ABAP
 IF line_exists( my_table[ key = 'A' ] ).
 ```
 
-更清楚简洁地表明意图，好于
+expresses the intent clearer and shorter than
 
 ```ABAP
 " anti-pattern
@@ -907,7 +1100,7 @@ READ TABLE my_table TRANSPORTING NO FIELDS WITH KEY key = 'A'.
 IF sy-subrc = 0.
 ```
 
-或者甚至是
+or even
 
 ```ABAP
 " anti-pattern
@@ -917,15 +1110,15 @@ LOOP AT my_table REFERENCE INTO DATA(line) WHERE key = 'A'.
 ENDLOOP.
 ```
 
-### READ TABLE 优于 LOOP AT
+### Prefer READ TABLE to LOOP AT
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#read-table-优于-loop-at)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#prefer-read-table-to-loop-at)
 
 ```ABAP
 READ TABLE my_table REFERENCE INTO DATA(line) WITH KEY key = 'A'.
 ```
 
-更清楚简洁地表明意图，好于
+expresses the intent clearer and shorter than
 
 ```ABAP
 " anti-pattern
@@ -934,7 +1127,7 @@ LOOP AT my_table REFERENCE INTO DATA(line) WHERE key = 'A'.
 ENDLOOP.
 ```
 
-或者甚至是
+or even
 
 ```ABAP
 " anti-pattern
@@ -945,15 +1138,15 @@ LOOP AT my_table REFERENCE INTO DATA(line).
 ENDLOOP.
 ```
 
-### LOOP AT WHERE 优于嵌套式 IF
+### Prefer LOOP AT WHERE to nested IF
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#loop-at-where-优于嵌套式-if)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#prefer-loop-at-where-to-nested-if)
 
 ```ABAP
 LOOP AT my_table REFERENCE INTO DATA(line) WHERE key = 'A'.
 ```
 
-更清楚简洁地表明意图，好于
+expresses the intent clearer and shorter than
 
 ```ABAP
 LOOP AT my_table REFERENCE INTO DATA(line).
@@ -963,11 +1156,12 @@ LOOP AT my_table REFERENCE INTO DATA(line).
 ENDLOOP.
 ```
 
-### 避免不必要的表读取
+### Avoid unnecessary table reads
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [表](#表) > [本节](#避免不必要的表读取)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Tables](#tables) > [This section](#avoid-unnecessary-table-reads)
 
-若你_预期_某一行就在表里，那就读取一次并对异常作出处理就够了，
+In case you _expect_ a row to be there,
+read once and react to the exception,
 
 ```ABAP
 TRY.
@@ -977,32 +1171,36 @@ TRY.
 ENDTRY.
 ```
 
-而不是用两次读取打乱并减慢主控制流
+instead of littering and slowing down
+the main control flow with a double read
 
 ```ABAP
 " anti-pattern
 IF NOT line_exists( my_table[ key = input ] ).
   RAISE EXCEPTION NEW /clean/my_data_not_found( ).
-ENDTRY.
+ENDIF.
 DATA(row) = my_table[ key = input ].
 ```
 
-> 除了提高性能以外，这还是更一般性的[关注愉快路径或错误处理，但非两者兼顾](#关注愉快路径或错误处理但非两者兼顾)的一种特殊变化形式。
+> Besides being a performance improvement,
+> this is a special variant of the more general
+> [Focus on the happy path or error handling, but not both](#focus-on-the-happy-path-or-error-handling-but-not-both).
 
-## 字符串
+## Strings
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#字符串)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#strings)
 
-### 使用 ` 定义文字
+### Use ` to define literals
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [字符串](#字符串) > [本节](#使用--定义文字)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Strings](#strings) > [This section](#use--to-define-literals)
 
 ```ABAP
 CONSTANTS some_constant TYPE string VALUE `ABC`.
 DATA(some_string) = `ABC`.  " --> TYPE string
 ```
 
-避免使用 `'`，因为它会增加多余的类型转换，并且会令读者困惑于处理的究竟是 `CHAR` 还是 `STRING`：
+Refrain from using `'`, as it adds a superfluous type conversion and confuses the reader
+whether he's dealing with a `CHAR` or `STRING`:
 
 ```ABAP
 " anti-pattern
@@ -1010,86 +1208,101 @@ DATA some_string TYPE string.
 some_string = 'ABC'.
 ```
 
-`|` 一般都适用，但无法用于 `CONSTANTS`，而且在指定固定值时会增加不必要的开销：
+`|` is generally okay, but cannot be used for `CONSTANTS` and adds needless overhead when specifying a fixed value:
 
 ```ABAP
 " anti-pattern
 DATA(some_string) = |ABC|.
 ```
 
-### 使用 | 汇集文本
+### Use | to assemble text
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [字符串](#字符串) > [本节](#使用--汇集文本)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Strings](#strings) > [This section](#use--to-assemble-text)
 
 ```ABAP
 DATA(message) = |Received HTTP code { status_code } with message { text }|.
 ```
 
-字符串模板更加突出地表明何为文字、何为变量，特别是如果在文本中嵌入多个变量的话。
+String templates highlight better what's literal and what's variable,
+especially if you embed multiple variables in a text.
 
 ```ABAP
 " anti-pattern
 DATA(message) = `Received an unexpected HTTP ` && status_code && ` with message ` && text.
 ```
 
-## 布尔值
+## Booleans
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#布尔值)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#booleans)
 
-### 明智地使用布尔值
+### Use Booleans wisely
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [布尔值](#布尔值) > [本节](#明智地使用布尔值)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Booleans](#booleans) > [This section](#use-booleans-wisely)
 
-经常会遇到下面这种情况，布尔值似乎是自然的选择
+We often encounter cases where Booleans seem to be a natural choice
 
 ```ABAP
 " anti-pattern
 is_archived = abap_true.
 ```
 
-而换个视角才发现本应选择枚举
+until a change of viewpoint suggests
+we should have chosen an enumeration
 
 ```ABAP
 archiving_status = /clean/archivation_status=>archiving_in_process.
 ```
 
-一般来说，用布尔值区分事物的类型是一种坏的选择，因为几乎总会遇到并非彼此排斥的情况
+Generally, Booleans are a bad choice
+to distinguish types of things
+because you will nearly always encounter cases
+that are not exclusively one or the other
 
 ```ABAP
 assert_true( xsdbool( document->is_archived( ) = abap_true AND
                       document->is_partially_archived( ) = abap_true ) ).
 ```
 
-此外，[拆分方法而非使用布尔输入参数](#拆分方法而非使用布尔输入参数)还解释了为何应始终回避布尔参数。
+[Split method instead of Boolean input parameter](#split-method-instead-of-boolean-input-parameter)
+moreover explains why you should always challenge Boolean parameters.
 
-> 更多信息参阅 [1](http://www.beyondcode.org/articles/booleanVariables.html)
+> Read more in
+> [1](http://www.beyondcode.org/articles/booleanVariables.html)
 
-### 用 ABAP_BOOL 表示布尔值
+### Use ABAP_BOOL for Booleans
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [布尔值](#布尔值) > [本节](#用-abap_bool-表示布尔值)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Booleans](#booleans) > [This section](#use-abap_bool-for-booleans)
 
 ```ABAP
 DATA has_entries TYPE abap_bool.
 ```
 
-不要使用普通类型 `char1`。尽管在技术上兼容，但它会掩盖处理的是布尔变量这个事实。
+Don't use the generic type `char1`.
+Although it is technically compatible it obscures the fact that we're dealing with a Boolean variable.
 
-也要避免其他布尔类型，因为它们常常会产生奇怪的副作用，例如，`boolean` 支持第三个值 "undefined"，它会导致难以觉察的编程错误。
+Also avoid other Boolean types as they often have strange side effects,
+for example `boolean` supports a third value "undefined" that results in subtle programming errors.
 
-在某些情况下，例如，对于 DynPro 字段，可能需要数据字典元素。此时无法使用 `abap_bool`，因为它是在类型池 `abap` 中而不是在数据字典中定义的。在此情况下，转而采用 `boole_d` 或 `xfeld`。如果需要自定义描述，那就创建自己的数据元素。
+In some cases you may need a data dictionary element, for example for DynPro fields.
+`abap_bool` cannot be used here because it is defined in the type pool `abap`, not in the data dictionary.
+In this case, resort to `boole_d` or `xfeld`.
+Create your own data element if you need a custom description.
 
-> ABAP 可能是唯一不带通用布尔数据类型的编程语言。然而，设立一个是大势所趋。本建议基于 ABAP Programming Guidelines。
+> ABAP may be the one single programming language that does not come with a universal Boolean data type.
+> However, having one is imperative.
+> This recommendation is based on the ABAP Programming Guidelines.
 
-### 使用 ABAP_TRUE 和 ABAP_FALSE 进行比较
+### Use ABAP_TRUE and ABAP_FALSE for comparisons
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [布尔值](#布尔值) > [本节](#使用-abap_true-和-abap_false-进行比较)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Booleans](#booleans) > [This section](#use-abap_true-and-abap_false-for-comparisons)
 
 ```ABAP
 has_entries = abap_true.
 IF has_entries = abap_false.
 ```
 
-不要使用等效字符 `'X'` 和 `' '` 或 `space`；用它们很难看出这是一个布尔表达式：
+Don't use the character equivalents `'X'` and `' '` or `space`;
+they make it hard to see that this is a Boolean expression:
 
 ```ABAP
 " anti-pattern
@@ -1097,24 +1310,26 @@ has_entries = 'X'.
 IF has_entries = space.
 ```
 
-避免与 `INITIAL` 进行比较 - 这会迫使读者去回想 `abap_bool` 的缺省值为 `abap_false`：
+Avoid comparisons with `INITIAL` - it forces readers to recollect that `abap_bool`'s default is `abap_false`:
 
 ```ABAP
 " anti-pattern
 IF has_entries IS NOT INITIAL.
 ```
 
-> ABAP 可能是唯一不带表示真假的内置“常量”的编程语言。然而，设立它们是大势所趋。本建议基于 ABAP Programming Guidelines。
+> ABAP may be the one single programming language that does not come with built-in "constants" for true and false.
+> However, having them is imperative.
+> This recommendation is based on the ABAP Programming Guidelines.
 
-### 使用 XSDBOOL 设置布尔变量
+### Use XSDBOOL to set Boolean variables
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [布尔值](#布尔值) > [本节](#使用-xsdbool-设置布尔变量)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Booleans](#booleans) > [This section](#use-xsdbool-to-set-boolean-variables)
 
 ```ABAP
 DATA(has_entries) = xsdbool( line IS NOT INITIAL ).
 ```
 
-等效的 `IF`-`THEN`-`ELSE` 除了长得多之外，别无它用：
+The equivalent `IF`-`THEN`-`ELSE` is much longer for nothing:
 
 ```ABAP
 " anti-pattern
@@ -1125,36 +1340,44 @@ ELSE.
 ENDIF.
 ```
 
-`xsdbool` 是最合乎本来目的的方法，因为它直接产生 `char1`，该类型最适合布尔类型 `abap_bool`。等效函数 `boolc` 和 `boolx` 会产生不同的类型并增加不必要的隐式类型转换。
+`xsdbool` is the best method for our purpose, as it directly produces a `char1`,
+which fits our boolean type `abap_bool` best.
+The equivalent functions `boolc` and `boolx` produce different types
+and add an unnecessary implicit type conversion.
 
-我们同意名称 `xsdbool` 不巧会产生误导；毕竟，我们对 "xsd" 前缀暗示的 "XML Schema Definition" 部分毫无兴趣。
+We agree that the name `xsdbool` is unlucky and misleading;
+after all, we're not at all interested in the "XML Schema Definition" parts that the "xsd" prefix suggests.
 
-`xsdbool` 的一种可行的备选方案是 `COND` 三元形式。其语法直接明了，但是有点长，因为它会不必要地重复 `THEN abap_true` 段，而且还需要知道隐式缺省值 `abap_false` - 这就是为什么我们建议只将其作为第二解决方案。
+A possible alternative to `xsdbool` is the `COND` ternary form.
+Its syntax is intuitive, but a little longer because it needlessly repeats the `THEN abap_true` segment,
+and requires knowledge of the implicit default value `abap_false` -
+which is why we suggest it only as secondary solution.
 
 ```ABAP
 DATA(has_entries) = COND abap_bool( WHEN line IS NOT INITIAL THEN abap_true ).
 ```
 
-## 条件
+## Conditions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#条件)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#conditions)
 
-### 尽量使条件为正
+### Try to make conditions positive
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [条件](#条件) > [本节](#尽量使条件为正)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Conditions](#conditions) > [This section](#try-to-make-conditions-positive)
 
 ```ABAP
 IF has_entries = abap_true.
 ```
 
-反之，比较时看看同样的语句会变得多难理解：
+For comparison, see how hard to understand the same statement gets by reversing it:
 
 ```ABAP
 " anti-pattern
 IF has_no_entries = abap_false.
 ```
 
-节标题中的“尽量”意味着事先不用强行这样做，直到在某一点要以诸如[空的 IF 分支](#无空的-if-分支)之类的语句结束时才应如此：
+The "try" in the section title means you shouldn't force this
+up to the point where you end up with something like [empty IF branches](#no-empty-if-branches):
 
 ```ABAP
 " anti-pattern
@@ -1164,11 +1387,11 @@ ELSE.
 ENDIF.
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 17: Smells and Heuristics: G29: Avoid Negative Conditionals_。
+> Read more in _Chapter 17: Smells and Heuristics: G29: Avoid Negative Conditionals_ of [Robert C. Martin's _Clean Code_].
 
-### IS NOT 优于 NOT IS
+### Prefer IS NOT to NOT IS
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [条件](#条件) > [本节](#is-not-优于-not-is)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Conditions](#conditions) > [This section](#prefer-is-not-to-not-is)
 
 ```ABAP
 IF variable IS NOT INITIAL.
@@ -1176,7 +1399,9 @@ IF variable NP 'TODO*'.
 IF variable <> 42.
 ```
 
-否定在逻辑上是等效的，但需要“脑筋转弯”，从而加大了理解难度。
+Negation is logically equivalent
+but requires a "mental turnaround"
+that makes it harder to understand.
 
 ```ABAP
 " anti-pattern
@@ -1185,13 +1410,17 @@ IF NOT variable CP 'TODO*'.
 IF NOT variable = 42.
 ```
 
-> [尽量使条件为正](#尽量使条件为正)的一个更加具体的变化形式。另请参见 ABAP programming guidelines 中的 [Alternative Language Constructs](https://help.sap.com/doc/abapdocu_753_index_htm/7.53/en-US/index.htm?file=abenalternative_langu_guidl.htm) 一节。
+> A more specific variant of
+[Try to make conditions positive](#try-to-make-conditions-positive).
+Also as described in the section
+[Alternative Language Constructs](https://help.sap.com/doc/abapdocu_753_index_htm/7.53/en-US/index.htm?file=abenalternative_langu_guidl.htm)
+in the ABAP programming guidelines.
 
-### 考虑分解复杂条件
+### Consider decomposing complex conditions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [条件](#条件) > [本节](#考虑分解复杂条件)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Conditions](#conditions) > [This section](#consider-decomposing-complex-conditions)
 
-将条件分解成若干基本组成部分，条件就会变得更加简单：
+Conditions can become easier when decomposing them into the elementary parts that make them up:
 
 ```ABAP
 DATA(example_provided) = xsdbool( example_a IS NOT INITIAL OR
@@ -1205,7 +1434,7 @@ IF example_provided = abap_true AND
    one_example_fits = abap_true.
 ```
 
-而不是全都掺和在一起：
+instead of leaving everything in-place:
 
 ```ABAP
 " anti-pattern
@@ -1216,13 +1445,13 @@ IF ( example_a IS NOT INITIAL OR
      fits( example_b ) = abap_true ).
 ```
 
-> 使用 ABAP 开发工具的快速修复功能，可以很快提取条件并创建如上所示的变量。
+> Use the ABAP Development Tools quick fixes to quickly extract conditions and create variables as shown above.
 
-### 考虑提炼复杂条件
+### Consider extracting complex conditions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [条件](#条件) > [本节](#考虑提炼复杂条件)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Conditions](#conditions) > [This section](#consider-extracting-complex-conditions)
 
-将复杂条件提炼成各自的方法是一个好主意：
+It's nearly always a good idea to extract complex conditions to methods of their own:
 
 ```ABAP
 IF is_provided( example ).
@@ -1236,13 +1465,13 @@ METHOD is_provided.
 ENDMETHOD.
 ```
 
-## If 语句
+## Ifs
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#if-语句)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#ifs)
 
-### 无空的 IF 分支
+### No empty IF branches
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [If 语句](#if-语句) > [本节](#无空的-if-分支)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Ifs](#ifs) > [This section](#no-empty-if-branches)
 
 ```ABAP
 IF has_entries = abap_false.
@@ -1250,7 +1479,7 @@ IF has_entries = abap_false.
 ENDIF.
 ```
 
-更加简明，好于
+is shorter and clearer than
 
 ```ABAP
 " anti-pattern
@@ -1260,9 +1489,9 @@ ELSE.
 ENDIF.
 ```
 
-### 对于多个备选条件，CASE 优于 ELSE IF
+### Prefer CASE to ELSE IF for multiple alternative conditions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [If 语句](#if-语句) > [本节](#对于多个备选条件case-优于-else-if)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Ifs](#ifs) > [This section](#prefer-case-to-else-if-for-multiple-alternative-conditions)
 
 ```ABAP
 CASE type.
@@ -1275,7 +1504,11 @@ CASE type.
 ENDCASE.
 ```
 
-采用 `CASE` 更容易看出来是一组互斥的选择。它比一连串 `IF` 执行起来更快，因为它可以转化为另一种不同的微处理器命令，而不是一连串顺序评估的条件。不必到处重复判别变量，就可以快速引入新的情况。该语句甚至可以防止无意中嵌套 `IF`-`ELSEIF` 时可能出现的一些错误。
+`CASE` makes it easy to see a set of alternatives that exclude each other.
+It can be faster than a series of `IF`s because it can translate to a different microprocessor command
+instead of a series of subsequently evaluated conditions.
+You can introduce new cases quickly, without having to repeat the discerning variable over and over again.
+The statement even prevents some errors that can occur when accidentally nesting the `IF`-`ELSEIF`s.
 
 ```ABAP
 " anti-pattern
@@ -1288,12 +1521,12 @@ ELSE.
 ENDIF.
 ```
 
-### 保持低嵌套深度
+### Keep the nesting depth low
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [If 语句](#if-语句) > [本节](#保持低嵌套深度)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Ifs](#ifs) > [This section](#keep-the-nesting-depth-low)
 
 ```ABAP
-" ani-pattern
+" anti-pattern
 IF <this>.
   IF <that>.
   ENDIF.
@@ -1306,17 +1539,17 @@ ELSE.
 ENDIF.
 ```
 
-嵌套的 `IF` 不仅难于快速理解，而且需要指数级的测试用例才能完全覆盖。
+Nested `IF`s get hard to understand very quickly and require an exponential number of test cases for complete coverage.
 
-通常可以通过形成子方法并引入辅助布尔变量来拆分决策树。
+Decision trees can usually be taken apart by forming sub-methods and introducing boolean helper variables.
 
-其他情况可以通过合并 IF 进行简化，比如
+Other cases can be simplified by merging IFs, such as
 
 ```ABAP
 IF <this> AND <that>.
 ```
 
-而不是毫无必要地嵌套
+instead of the needlessly nested
 
 ```ABAP
 " anti-pattern
@@ -1324,13 +1557,13 @@ IF <this>.
   IF <that>.
 ```
 
-## 正则表达式
+## Regular expressions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#正则表达式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#regular-expressions)
 
-### 较简单的方法优于正则表达式
+### Prefer simpler methods to regular expressions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [正则表达式](#正则表达式) > [本节](#较简单的方法优于正则表达式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Regular expressions](#regular-expressions) > [This section](#prefer-simpler-methods-to-regular-expressions)
 
 ```ABAP
 IF input IS NOT INITIAL.
@@ -1340,13 +1573,16 @@ WHILE contains( val = input  sub = 'abc' ).
 " WHILE contains( val = input  regex = 'abc' ).
 ```
 
-正则表达式难以快速理解。没有它们，简单情况通常反而更加容易。
+Regular expressions become hard to understand very quickly.
+Simple cases are usually easier without them.
 
-正则表达式通常也会消耗更多内存和处理时间，因为需要将其解析成表达式树并在运行时编译成可执行的匹配程序。直接使用循环和临时变量，简单就可以解决。
+Regular expressions also usually consume more memory and processing time
+because they need to be parsed into an expression tree and compiled at runtime into an executable matcher.
+Simple solutions may do with a straight-forward loop and a temporary variable.
 
-### 基本检查优于正则表达式
+### Prefer basis checks to regular expressions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [正则表达式](#正则表达式) > [本节](#基本检查优于正则表达式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Regular expressions](#regular-expressions) > [This section](#prefer-basis-checks-to-regular-expressions)
 
 ```ABAP
 CALL FUNCTION 'SEO_CLIF_CHECK_NAME'
@@ -1356,7 +1592,7 @@ CALL FUNCTION 'SEO_CLIF_CHECK_NAME'
     ...
 ```
 
-而不用费事改成
+instead of reinventing things
 
 ```ABAP
 " anti-pattern
@@ -1364,11 +1600,13 @@ DATA(is_valid) = matches( val     = class_name
                           pattern = '[A-Z][A-Z0-9_]{0,29}' ).
 ```
 
-> 当正则表达式无处不在时，，对不重复自己 (DRY) 的原则视而不见似乎变成一种自然的倾向，请对照 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 17: Smells and Heuristics: General: G5: Duplication_。
+> There seems to be a natural tendency to turn blind to the Don't-Repeat-Yourself (DRY) principle
+> when there are regular expressions around,
+> compare section _Chapter 17: Smells and Heuristics: General: G5: Duplication_ in [Robert C. Martin's _Clean Code_].
 
-### 考虑汇集复杂的正则表达式
+### Consider assembling complex regular expressions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [正则表达式](#正则表达式) > [本节](#考虑汇集复杂的正则表达式)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Regular expressions](#regular-expressions) > [This section](#consider-assembling-complex-regular-expressions)
 
 ```ABAP
 CONSTANTS class_name TYPE string VALUE `CL\_.*`.
@@ -1376,25 +1614,31 @@ CONSTANTS interface_name TYPE string VALUE `IF\_.*`.
 DATA(object_name) = |{ class_name }\|{ interface_name }|.
 ```
 
-有一些复杂的正则表达式，当您向读者展示它们是如何从更基本的片段构成时，就会变得更加容易。
+Some complex regular expressions become easier
+when you demonstrate to the reader how they are built up from more elementary pieces.
 
-## 类
+## Classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#classes)
 
-### 类：面向对象
+### Classes: Object orientation
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [本节](#类面向对象)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [This section](#classes-object-orientation)
 
-#### 对象优于静态类
+#### Prefer objects to static classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [类：面向对象](#类面向对象) > [本节](#对象优于静态类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Classes: Object orientation](#classes-object-orientation) > [This section](#prefer-objects-to-static-classes)
 
-首先，静态类失去了面向对象所具备的全部优势。特别是，有了它们，几乎无法在单元测试中用测试替身替换生产中的相关依赖。
+Static classes give up all advantages gained by object orientation in the first place.
+They especially make it nearly impossible to replace productive dependencies with test doubles in unit tests.
 
-如果您在考虑是否该使类或方法变成静态的，答案几乎总是：不。
+If you think about whether to make a class or method static, the answer will nearly always be: no.
 
-对于这条规则，有一种例外情况可以接受，那就是简单的实用工具类。其方法使其更容易与某些 ABAP 类型进行交互。它们不仅完全无态，而且相当初级，看起来就像是 ABAP 语句或内置函数。辨别因素是，其调用 者会将它们紧紧捆绑到各自的代码中，从而真的没法在单元测试中对其进行模拟。
+One accepted exception to this rule are plain type utils classes.
+Their methods make it easier to interact with certain ABAP types.
+They are not only completely stateless, but so basic that they look like ABAP statements or built-in functions.
+The discriminating factor is that their consumers tie them into their code so tightly
+that they actually don't want to mock them in unit tests.
 
 ```ABAP
 CLASS /clean/string_utils DEFINITION [...].
@@ -1411,27 +1655,42 @@ METHOD retrieve.
 ENDMETHOD.
 ```
 
-#### 组合优于继承
+#### Prefer composition to inheritance
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [类：面向对象](#类面向对象) > [本节](#组合优于继承)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Classes: Object orientation](#classes-object-orientation) > [This section](#prefer-composition-to-inheritance)
 
-避免构建具有继承性的类层次结构，应该选择组合。
+Avoid building hierarchies of classes with inheritance. Instead, favor composition.
 
-很难设计出完美的继承，因为需要遵守规则，如 [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle)。另外，也很难理解，因为人们需要认识并领会层次结构背后的指导原则。继承会降低重用性，因为方法往往仅对子类才可用。它还会使重构复杂化，因为移动或更改成员往往需要对整个层次结构树进行更改。
+Clean inheritance is hard to design because you need to respect rules
+like the [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle).
+It is also hard to understand because people need to realize and digest the guiding principles behind the hierarchy.
+Inheritance reduces reuse because methods tend to be made available only to sub-classes.
+It also complicates refactoring because moving or changing members tend to require changes to the whole hierarchy tree.
 
-组合意味着要设计小的独立对象，每个对象只服务于一个特定目的。通过简单的代理和外观模式，就可以将这些对象重新组合成更复杂的对象。组合可能会产生更多的类，但除此之外再无其他缺点。
+Composition means that you design small, independent objects, each of which serves one specific purpose.
+These objects can be recombined into more complex objects by simple delegation and facade patterns.
+Composition may produce more classes, but has otherwise no further disadvantages.
 
-莫因这条规则而丧失在恰当之处使用继承的信心。有一些应用场合很适合使用继承，例如，[Composite design pattern](https://en.wikipedia.org/wiki/Composite_pattern)。只需中肯地问问自己，在所处情况下，继承是否确实利大于弊。如有怀疑，一般来说，选择组合更稳妥。
+Don't let this rule discourage you from using inheritance in the right places.
+There are good applications for inheritance,
+for example the [Composite design pattern](https://en.wikipedia.org/wiki/Composite_pattern).
+Just ask yourself critically whether inheritance in your case will really provide more benefits than disadvantages.
+If in doubt, composition generally is the safer choice.
 
-> [Interfaces vs. abstract classes](sub-sections/InterfacesVsAbstractClasses.md) 对此做了一些详细比较。
+> [Interfaces vs. abstract classes](sub-sections/InterfacesVsAbstractClasses.md)
+compares some details.
 
-#### 勿在同一个类中混用有态和无态
+#### Don't mix stateful and stateless in the same class
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [类：面向对象](#类面向对象)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Classes: Object orientation](#classes-object-orientation)
 
-不要在同一个类中混用无态和有态编程范式。
+Don't mix the stateless and the stateful
+programming paradigms in the same class.
 
-在无态编程中，方法获取输入并产生输出，_而不会有任何副作用_，因此无论何时、以何顺序调用，方法都会产生相同的结果。
+In stateless programming, methods get input and produce output,
+_without any side effects_, resulting in methods
+that produce the same result
+no matter when and in what order they are called.
 
 ```ABAP
 CLASS /clean/xml_converter DEFINITION PUBLIC FINAL CREATE PUBLIC.
@@ -1456,7 +1715,8 @@ CLASS /clean/xml_converter IMPLEMENTATION.
 ENDCLASS.
 ```
 
-在有态编程中，通过对象的方法操控其内部状态，这意味着_满是副作用_。
+In stateful programming, we manipulate the internal state of objects
+through their methods, meaning it is _full of side effects_.
 
 ```ABAP
 CLASS /clean/log DEFINITION PUBLIC CREATE PUBLIC.
@@ -1473,66 +1733,102 @@ CLASS /clean/log IMPLEMENTATION.
 ENDCLASS.
 ```
 
-两种范式都不错，有各自的应用场合。然而，在同一个对象中_混用_会使代码难以理解，并且由于携带着的隐蔽错误以及同步性问题，注定会失败。切勿这样做。
+Both paradigms are okay and have their applications.
+However, _mixing_ them in the same object produces code
+that is hard to understand and sure to fail
+with obscure carry-over errors and synchronicity problems.
+Don't do that.
 
-### 作用域
+### Scope
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [本节](#作用域)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [This section](#scope)
 
-#### 缺省情况下为全局，仅在适当位置为局部
+#### Global by default, local only where appropriate
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [作用域](#作用域) > [本节](#缺省情况下为全局仅在适当位置为局部)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Scope](#scope) > [This section](#global-by-default-local-only-where-appropriate)
 
-默认情况下运用全局类。只有在适当位置使用局部类。
+Work with global classes as default.
+Use local classes only where appropriate.
 
-> 全局类在数据字典中可见。局部类存在于另一个开发对象的 include 内，仅对这个另外的对象可见。
+> Global classes are the ones that are visible in the data dictionary.
+> Local classes live within an include of another development object
+> and are only visible to this other object.
 
-局部类适用
+Local classes are suited
 
-- 用于非常特定的私有数据结构，例如全局类数据的迭代器，仅此处需要这些数据结构，
+- for very specific private data structures,
+for example an iterator for the global class's data,
+which will only ever be needed here,
 
-- 用于提取复杂的私有部分算法，例如从其余类代码算法中提取出特殊用途的多方法的排序聚合算法，
+- to extract a complex private piece algorithm,
+for example to disentangle that special purpose multi-method
+sort-aggregate algorithm from the rest of your class's code,
 
-- 用于模拟全局类的特定方面，例如，通过将所有数据库访问提取到可在单元测试中使用测试替身替换的单独局部类。
+- to enable mocking certain aspects of the global class,
+for example by extracing all database access to a separate local class
+that can the be replaced with a test double in the unit tests.
 
-局部类将阻碍重用，因为它们无法在其他位置使用。尽管局部类易于提取，但人们通常甚至无法找到它们，从而导致不希望的代码重复。在极长的局部类中进行定向、导航和调试非常乏味且令人讨厌。由于 ABAP 锁是在包含文件级别上的，人们将无法同时在本地包含文件的不同部分上工作（只有在它们是不同的全局类的情况下，才能执行此操作）。
+Local classes hinder reuse because they cannot be used elsewhere.
+Although they are easy to extract, people will usually fail to even find them,
+leading to undesired code duplication.
+Orientation, navigation, and debugging in very long local class includes
+is tedious and annoying. 
+As ABAP locks on include level, people will not be able to work on
+different parts of the local include simultaneously
+(which would be possible if they were separate global classes).
 
-在以下情况下，重新考虑局部类的使用：
+Reconsider your use of local classes if
 
-- 您的本地包含文件可以包含数十个类和数千行代码，
-- 您将全局类视为包含其他类的“包”，
-- 您的全局类退化为空壳，
-- 您发现单独的本地包含文件中有重复代码，
-- 您的开发人员开始互相锁定，无法并行工作，
-- 由于您的团队无法理解彼此的本地子树，因此您的工作项估计会变得很多。
+- your local include spans dozens of classes and thousands of lines of code,
+- you think about global classes as "packages" that hold other classes,
+- your global classes degenerate into empty hulls,
+- you find duplicate code repeated throughout separate local includes,
+- your developers start locking each other out and become unable to work in parallel,
+- your backlog estimates go sky-high because your teams fail to understand each other's local sub-trees.
 
-#### 若非为继承而设计则为 FINAL
+#### FINAL if not designed for inheritance
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [作用域](#作用域) > [本节](#若非为继承而设计则为-final)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Scope](#scope) > [This section](#final-if-not-designed-for-inheritance)
 
-将并非针对继承而明确设计的类构建为 `FINAL`。
+Make classes that are not explicitly designed for inheritance `FINAL`.
 
-在设计类的合作能力时，您的首选应该是[组合而不是继承](#组合优于继承)。实现继承不是一件容易的事，因为需要您考虑 `PROTECTED` 与 `PRIVATE` 等属性以及 [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle)，并且冻结了许多设计内部功能。如果您在类设计中没有考虑这些问题，那么应该通过将类构建为 `FINAL` 来防止意外继承。
+When designing class cooperation,
+your first choice should be [composition, not inheritance](#prefer-composition-to-inheritance).
+Enabling inheritance is not something that should be done lightly,
+as it requires you to think about things like `PROTECTED` vs. `PRIVATE`
+and the [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle),
+and freezes a lot of design internals.
+If you didn't consider these things in your class design,
+you should thus prevent accidental inheritance by making your class `FINAL`.
 
-当然，继承_有_一些很好的应用程序，例如设计模式[复合](https://en.wikipedia.org/wiki/Composite_pattern)。通过允许使用子类，业务加载项也可以变得更加有用，客户能够重用大多数原始代码。但是，请注意，所有这些情况下，从一开始就通过设计内置了继承。
+There _are_ some good applications for inheritance, of course,
+for example the design pattern [composite](https://en.wikipedia.org/wiki/Composite_pattern).
+Business Add-Ins can also become more useful by allowing sub-classes,
+enabling the customer to reuse most of the original code.
+However, note that all of these cases have inheritance built in by design from the start.
 
-未[实施接口](#公共实例方法应为接口的一部分)的不整洁类应保持非 `FINAL`，这样使用者才能在单元测试中对其进行模拟。
+Unclean classes that don't [implement interfaces](#public-instance-methods-should-be-part-of-an-interface)
+should be left non-`FINAL` to allow consumers mocking them in their unit tests.
 
-#### 缺省情况下为 PRIVATE，仅在需要时为 PROTECTED
+#### Members PRIVATE by default, PROTECTED only if needed
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [作用域](#作用域) > [本节](#缺省情况下为-private仅在需要时为-protected)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Scope](#scope) > [This section](#members-private-by-default-protected-only-if-needed)
 
-默认情况下，将属性、方法和其他类成员设置为 `PRIVATE`。
+Make attributes, methods, and other class members `PRIVATE` by default.
 
-只有在您要启用子类覆盖它们时才将它们设置为 `PROTECTED`。
+Make them only `PROTECTED` if you want to enable sub-classes that override them.
 
-只有需要的情况下，才应让类的内部元素供其他成员或程序使用。这不仅包括外部调用者，还包括子类。信息过度可用可能会因意外重新定义而导致细微错误，并阻碍重构，因为外部调用将冻结原本应流动的成员。
+Internals of classes should be made available to others only on a need-to-know basis.
+This includes not only outside callers but also sub-classes.
+Making information over-available can cause subtle errors by unexpected redefinitions and hinder refactoring
+because outsiders freeze members in place that should still be liquid.
 
-#### 考虑使用不可变对象而非 getter
+#### Consider using immutable instead of getter
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [作用域](#作用域) > [本节](#考虑使用不可变对象而非-getter)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Scope](#scope) > [This section](#consider-using-immutable-instead-of-getter)
 
-不可变对象是在构造后永不改变的对象。对于此类对象，请考虑使用公有只读属性而不是 getter 方法。
+An immutable is an object that never changes after its construction.
+For this kind of object consider using public read-only attributes instead of getter methods.
 
 ```ABAP
 CLASS /clean/some_data_container DEFINITION.
@@ -1548,7 +1844,7 @@ CLASS /clean/some_data_container DEFINITION.
 ENDCLASS.
 ```
 
-而不是
+instead of
 
 ```ABAP
 CLASS /dirty/some_data_container DEFINITION.
@@ -1563,29 +1859,37 @@ CLASS /dirty/some_data_container DEFINITION.
 ENDCLASS.
 ```
 
-> **警告**：对于**具有**变化值的对象，请勿使用公有只读属性。否则，此属性必须始终保持最新状态，无论其他任何代码是否需要它们的值。
+> **Caution**: For objects which **do** have changing values, do not use public read-only attributes.
+> Otherwise this attributes always have to be kept up to date,
+> regardless if their value is needed by any other code or not.
 
-#### 保守地使用 READ-ONLY
+#### Use READ-ONLY sparingly
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [作用域](#作用域) > [本节](#保守地使用-read-only)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Scope](#scope) > [This section](#use-read-only-sparingly)
 
-许多现代编程语言（尤其是 Java）建议尽量将类成员设置为只读，以防止产生意外的不良影响。
+Many modern programming languages, especially Java, recommend making class members read-only
+wherever appropriate to prevent accidental side effects.
 
-尽管 ABAP _确实_为数据声明提供了 `READ-ONLY` 加载项，但我们建议您谨慎使用。
+While ABAP _does_ offer the `READ-ONLY` addition for data declarations, we recommend to use it sparingly.
 
-首先，仅在 `PUBLIC SECTION` 中提供了加载项，从而大大降低了其适用范围。您既不能将其添加到受保护的成员或私有成员，也不能将其添加到方法中的局部变量。
+First, the addition is only available in the `PUBLIC SECTION`, reducing its applicability drastically.
+You can neither add it to protected or private members nor to local variables in a method.
 
-其次，加载项的执行结果与人们对其他编程语言的期望行为略有不同：仍然可以通过类本身、其友元类及其子类中的任何方法自由地修改 READ-ONLY 数据。这与其他语言中普遍采用的“一次写入，永远不会修改”行为相矛盾。这种差异可能会导致令人惊讶的意外。
+Second, the addition works subtly different from what people might expect from other programming languages:
+READ-ONLY data can still be modified freely from any method within the class itself, its friends, and its sub-classes.
+This contradicts the more widespread write-once-modify-never behavior found in other languages.
+The difference may lead to bad surprises.
 
-> 为了避免误解：保护变量以防意外修改是一种很好的做法。如果是一个合适的语句，我们也建议将其应用于 ABAP中。
+> To avoid misunderstandings: Protecting variables against accidental modification is a good practice.
+> We would recommend applying it to ABAP as well if there was an appropriate statement.
 
-### 构造函数
+### Constructors
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [本节](#构造函数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [This section](#constructors)
 
-#### NEW 优于 CREATE OBJECT
+#### Prefer NEW to CREATE OBJECT
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [构造函数](#构造函数) > [本节](#new-优于-create-object)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Constructors](#constructors) > [This section](#prefer-new-to-create-object)
 
 ```ABAP
 DATA object TYPE REF TO /clean/some_number_range.
@@ -1596,7 +1900,7 @@ DATA(object) = NEW /clean/some_number_range( '/CLEAN/CXTGEN' ).
 DATA(object) = CAST /clean/number_range( NEW /clean/some_number_range( '/CLEAN/CXTGEN' ) ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -1606,7 +1910,7 @@ CREATE OBJECT object
     number_range = '/DIRTY/CXTGEN'.
 ```
 
-当然，除非需要动态类型
+except where you need dynamic types, of course
 
 ```ABAP
 CREATE OBJECT number_range TYPE (dynamic_type)
@@ -1614,9 +1918,9 @@ CREATE OBJECT number_range TYPE (dynamic_type)
     number_range = '/CLEAN/CXTGEN'.
 ```
 
-#### 如果全局类为 CREATE PRIVATE，，则保留 CONSTRUCTOR 为公有
+#### If your global class is CREATE PRIVATE, leave the CONSTRUCTOR public
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [构造函数](#构造函数) > [本节](#如果全局类为-create-private则保留-constructor-为公共)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Constructors](#constructors) > [This section](#if-your-global-class-is-create-private-leave-the-constructor-public)
 
 ```ABAP
 CLASS /clean/some_api DEFINITION PUBLIC FINAL CREATE PRIVATE.
@@ -1624,13 +1928,17 @@ CLASS /clean/some_api DEFINITION PUBLIC FINAL CREATE PRIVATE.
     METHODS constructor.
 ```
 
-我们同意这是自相矛盾的。但根据文章 [ABAP 帮助的 _Instance Constructor_](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abeninstance_constructor_guidl.htm)，需要在 `PUBLIC SECTION` 中指定 `CONSTRUCTOR` 以确保正确的编译和语法验证。
+We agree that this contradicts itself.
+However, according to the article
+[_Instance Constructor_ of the ABAP Help](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abeninstance_constructor_guidl.htm),
+specifying the `CONSTRUCTOR` in the `PUBLIC SECTION` is required to guarantee correct compilation and syntax validation.
 
-这仅适用于全局类。在局部类中，应将构造函数设置为私有。
+This applies only to global classes.
+In local classes, make the constructor private, as it should be.
 
-#### 多个静态创建方法优于可选参数
+#### Prefer multiple static creation methods to optional parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [构造函数](#构造函数) > [本节](#prefer-multiple-static-factory-methods-to-optional-parameters)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Constructors](#constructors) > [This section](#prefer-multiple-static-creation-methods-to-optional-parameters)
 
 ```ABAP
 CLASS-METHODS describe_by_data IMPORTING data TYPE any [...]
@@ -1639,7 +1947,8 @@ CLASS-METHODS describe_by_object_ref IMPORTING object_ref TYPE REF TO object [..
 CLASS-METHODS describe_by_data_ref IMPORTING data_ref TYPE REF TO data [...]
 ```
 
-ABAP 不支持[过载](https://en.wikipedia.org/wiki/Function_overloading)。使用名称变式而不是可选参数来实现所需的语义。
+ABAP does not support [overloading](https://en.wikipedia.org/wiki/Function_overloading).
+Use name variations and not optional parameters to achieve the desired semantics.
 
 ```ABAP
 " anti-pattern
@@ -1652,15 +1961,20 @@ METHODS constructor
   [...]
 ```
 
-[_拆分方法而非添加 OPTIONAL 参数_](#拆分方法而非添加-optional-参数)通用指南介绍了根本原因。
+The general guideline
+[_Split methods instead of adding OPTIONAL parameters_](#split-methods-instead-of-adding-optional-parameters)
+explains the reasoning behind this.
 
-考虑使用[构建器设计模式](https://en.wikipedia.org/wiki/Builder_pattern)将复杂构造解析为多步构造。
+Consider resolving complex constructions to a multi-step construction with the
+[Builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern).
 
-#### 用描述性名称表示多个创建方法
+#### Use descriptive names for multiple creation methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [构造函数](#构造函数) > [本节](#用描述性名称表示多个创建方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Constructors](#constructors) > [This section](#use-descriptive-names-for-multiple-creation-methods)
 
-用于创建方法的有效单词为 `new_`、`create_` 和 `construct_`。人们凭直觉就可以将它们与对象构造联系起来。还可以将这些单词连用构成动词短语，如 `new_from_template`、`create_as_copy` 或 `create_by_name`。
+Good words to start creation methods are `new_`, `create_`, and `construct_`.
+People intuitively connect them to the construction of objects.
+They also add up nicely to verb phrases like `new_from_template`, `create_as_copy`, or `create_by_name`.
 
 ```ABAP
 CLASS-METHODS new_describe_by_data IMPORTING p_data TYPE any [...]
@@ -1669,7 +1983,7 @@ CLASS-METHODS new_describe_by_object_ref IMPORTING p_object_ref TYPE REF TO obje
 CLASS-METHODS new_describe_by_data_ref IMPORTING p_data_ref TYPE REF TO data [...]
 ```
 
-而不是无意义的名称，例如
+instead of something meaningless like
 
 ```ABAP
 " anti-pattern
@@ -1679,9 +1993,9 @@ CLASS-METHODS create_3 IMPORTING p_object_ref TYPE REF TO object [...]
 CLASS-METHODS create_4 IMPORTING p_data_ref TYPE REF TO data [...]
 ```
 
-#### 仅在多实例无意义的情况下变成单例
+#### Make singletons only where multiple instances don't make sense
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [类](#类) > [构造函数](#构造函数) > [本节](#仅在多实例无意义的情况下变成单例)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Classes](#classes) > [Constructors](#constructors) > [This section](#make-singletons-only-where-multiple-instances-dont-make-sense)
 
 ```ABAP
 METHOD new.
@@ -1692,23 +2006,69 @@ METHOD new.
 ENDMETHOD.
 ```
 
-在您的面向对象的设计中提到第二个实例没有意义的情况下应用单例模式。该模式可确保每个使用者都以相同的状态和相同的数据处理相同的内容。
+Apply the singleton pattern where your object-oriented design says
+that having a second instance of something doesn't make sense.
+Use it to ensure that every consumer is working with the same thing in the same state and with the same data.
 
-不要出于习惯或者因为某些性能规则的评分而使用单例模式。该模式最容易被过度使用和错误应用，这会产生意想不到的交叉影响，并为测试增加不必要的复杂性。如果单一对象没有设计驱动原因，可由使用者自己做决定，他仍然可以通过构造函数之外的方式（例如使用工厂）达到相同目的。
+Do not use the singleton pattern out of habit or because some performance rule tells you so.
+It is the most overused and wrongly applied pattern and
+produces unexpected cross-effects and needlessly complicates testing.
+If there are no design-driven reasons for a unitary object,
+leave that decision to the consumer - he can still reach the same by means outside the constructor,
+for example with a factory.
 
-## 方法
+## Methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#methods)
 
-这些规则可应用于类和功能模块中的方法。
+These rules apply to methods in classes and function modules.
 
-### 调用
+### Calls
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#调用)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#calls)
 
-#### 函数式调用优于过程式调用
+#### Don't call static methods through instance variables
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [调用](#调用) > [本节](#函数式调用优于过程式调用)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#dont-call-static-methods-through-instance-variables)
+
+For calling a static method, use
+```ABAP
+cl_my_class=>static_method( ).
+```
+
+Instead of calling it through an instance variable to `cl_my_class`
+```ABAP
+" anti-pattern
+lo_my_instance->static_method( ).
+```
+
+A static method is attached to the class itself, and calling it through an instance variable is a potential source of confusion.
+
+It's OK to call a static method of the same class without qualifying it within another static method.
+
+```ABAP
+METHOD static_method.
+  another_static_method( ).
+  yet_another( ).
+ENDMETHOD.
+```
+
+However, within an instance method, even when calling a static method of the same class, you should still qualify the call with the class name:
+
+```ABAP
+CLASS cl_my_class IMPLEMENTATION.
+
+  METHOD instance_method.
+    cl_my_class=>a_static_method( ).
+    another_instance_method( ).
+  ENDMETHOD.
+
+  ...
+```
+
+#### Prefer functional to procedural calls
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#prefer-functional-to-procedural-calls)
 
 ```ABAP
 modify->update( node           = /clean/my_bo_c=>node-item
@@ -1717,7 +2077,7 @@ modify->update( node           = /clean/my_bo_c=>node-item
                 changed_fields = changed_fields ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -1729,7 +2089,7 @@ CALL METHOD modify->update
     changed_fields = changed_fields.
 ```
 
-如果动态类型禁止函数调用，请使用过程式调用
+If dynamic typing forbids functional calls, resort to the procedural style
 
 ```ABAP
 CALL METHOD modify->(method_name)
@@ -1740,17 +2100,17 @@ CALL METHOD modify->(method_name)
     changed_fields = changed_fields.
 ```
 
-以下许多详细规则只是此建议的更具体变式。
+Many of the detailed rules below are just more specific variations of this advice.
 
-#### 省略 RECEIVING
+#### Omit RECEIVING
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [调用](#调用) > [本节](#省略-receiving)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#omit-receiving)
 
 ```ABAP
 DATA(sum) = aggregate_values( values ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -1761,9 +2121,9 @@ aggregate_values(
     result = DATA(sum) ).
 ```
 
-#### 省略可选关键字 EXPORTING
+#### Omit the optional keyword EXPORTING
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [调用](#调用) > [本节](#省略可选关键字-exporting)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#omit-the-optional-keyword-exporting)
 
 ```ABAP
 modify->update( node           = /clean/my_bo_c=>node-item
@@ -1772,7 +2132,7 @@ modify->update( node           = /clean/my_bo_c=>node-item
                 changed_fields = changed_fields ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -1784,60 +2144,63 @@ modify->update(
     changed_fields = changed_fields ).
 ```
 
-#### 在单参数调用中省略参数名称
+#### Omit the parameter name in single parameter calls
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [调用](#调用) > [本节](#在单参数调用中省略参数名称)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#omit-the-parameter-name-in-single-parameter-calls)
 
 ```ABAP
 DATA(unique_list) = remove_duplicates( list ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
 DATA(unique_list) = remove_duplicates( list = list ).
 ```
 
-但是，在某些情况下，仅方法名称还不够清楚，重复参数名称可能会更易于理解：
+There are cases, however, where the method name alone is not clear enough
+and repeating the parameter name may further understandability:
 
 ```ABAP
 car->drive( speed = 50 ).
 update( asynchronous = abap_true ).
 ```
 
-#### 在调用实例方法时省略自我引用 me
+#### Omit the self-reference me when calling an instance method
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [调用](#调用) > [本节](#在调用实例方法时省略自我引用-me)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Calls](#calls) > [This section](#omit-the-self-reference-me-when-calling-an-instance-method)
 
-由于自我引用 `me->` 是由系统隐式设置的，因此可在调用实例方法时将其省略
+Since the self-reference `me->` is implicitly set by the system, omit it when calling an instance method
 
 ```ABAP
 DATA(sum) = aggregate_values( values ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
 DATA(sum) = me->aggregate_values( values ).
 ```
 
-### 方法：面向对象
+### Methods: Object orientation
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#方法面向对象)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#methods-object-orientation)
 
-#### 实例优于静态方法
+#### Prefer instance to static methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法：面向对象](#方法面向对象) > [本节](#实例优于静态方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Methods: Object orientation](#methods-object-orientation) > [This section](#prefer-instance-to-static-methods)
 
-缺省情况下，方法应为实例成员。实例方法可以更好地反映类的“对象本质”。在单元测试中可以更轻松地模拟这些方法。
+Methods should be instance members by default.
+Instance methods better reflect the "object-hood" of the class.
+They can be mocked easier in unit tests.
 
 ```ABAP
 METHODS publish.
 ```
 
-方法仅在特殊情况下才是静态的，例如静态创建方法。
+Methods should be static only in exceptional cases, such as static creation methods.
 
 ```ABAP
 CLASS-METHODS create_instance
@@ -1845,27 +2208,31 @@ CLASS-METHODS create_instance
     VALUE(result) TYPE REF TO /clean/blog_post.
 ```
 
-#### 公共实例方法应为接口的一部分
+#### Public instance methods should be part of an interface
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法：面向对象](#方法面向对象) > [本节](#公共实例方法应为接口的一部分)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Methods: Object orientation](#methods-object-orientation) > [This section](#public-instance-methods-should-be-part-of-an-interface)
 
-公有实例方法应始终是接口的一部分。这样可以解耦相关性，并简化单元测试中的模拟过程。
+Public instance methods should always be part of an interface.
+This decouples dependencies and simplifies mocking them in unit tests.
 
 ```ABAP
 METHOD /clean/blog_post~publish.
 ```
 
-在面向整洁对象的方法中，公开没有接口的方法没有多大意义，枚举类等少数方法除外，这些方法永远不会有备选实施，也永远不会在测试用例中进行模拟。
+In clean object orientation, having a method public without an interface does not make much sense -
+with few exceptions such as enumeration classes
+which will never have an alternative implementation and will never be mocked in test cases.
 
-> [接口与抽象类](sub-sections/InterfacesVsAbstractClasses.md)描述了为什么这也适用于覆盖继承方法的类。
+> [Interfaces vs. abstract classes](sub-sections/InterfacesVsAbstractClasses.md)
+describes why this also applies to classes that overwrite inherited methods.
 
-### 参数数目
+### Parameter Number
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#参数数目)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#parameter-number)
 
-#### 力图减少 IMPORTING 参数，最好少于三个
+#### Aim for few IMPORTING parameters, at best less than three
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数数目](#参数数目) > [本节](#力图减少-importing-参数最好少于三个)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Number](#parameter-number) > [This section](#aim-for-few-importing-parameters-at-best-less-than-three)
 
 ```ABAP
 FUNCTION seo_class_copy
@@ -1877,7 +2244,7 @@ FUNCTION seo_class_copy
     ...
 ```
 
-整洁程度优于
+would be much clearer than
 
 ```ABAP
 " anti-pattern
@@ -1897,20 +2264,22 @@ FUNCTION seo_class_copy
     ...
 ```
 
-输入参数过多会大幅增加方法的复杂性，因为方法需要处理指数级的组合。有多个参数就说明该方法做了超过一件事。
+Too many input parameters let the complexity of a method explode
+because it needs to handle an exponential number of combinations.
+Many parameters are an indicator that the method may do more than one thing.
 
-您可以通过结构和对象将参数组合为有意义的集合，从而减少参数的数目。
+You can reduce the number of parameters by combining them into meaningful sets with structures and objects.
 
-#### 拆分方法而非添加 OPTIONAL 参数
+#### Split methods instead of adding OPTIONAL parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数数目](#参数数目) > [本节](#拆分方法而非添加-optional-参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Number](#parameter-number) > [This section](#split-methods-instead-of-adding-optional-parameters)
 
 ```ABAP
 METHODS do_one_thing IMPORTING what_i_need TYPE string.
 METHODS do_another_thing IMPORTING something_else TYPE i.
 ```
 
-为了实现ABAP不支持但又需要的语义[过载](https://en.wikipedia.org/wiki/Function_overloading)。
+to achieve the desired semantic as ABAP does not support [overloading](https://en.wikipedia.org/wiki/Function_overloading).
 
 ```ABAP
 " anti-pattern
@@ -1920,27 +2289,33 @@ METHODS do_one_or_the_other
     something_else TYPE i OPTIONAL.
 ```
 
-可选参数使调用者感到困惑：
+Optional parameters confuse callers:
 
-- 真正需要哪些参数？
-- 哪些参数组合有效？
-- 哪些参数互相排斥？
+- Which ones are really required?
+- Which combinations are valid?
+- Which ones exclude each other?
 
-按特定的参数拆分成多个方法可以给人明确的指引，从而避免了这种混淆。
+Multiple methods with specific parameters for the use case avoid this confusion by giving clear guidance which parameter combinations are valid and expected.
 
-#### 保守地使用 PREFERRED PARAMETER
+#### Use PREFERRED PARAMETER sparingly
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数数目](#参数数目) > [本节](#保守地使用-preferred-parameter)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Number](#parameter-number) > [This section](#use-preferred-parameter-sparingly)
 
-额外定义`PREFERRED PARAMETER` 让人很难知道实际需要提供什么样的参数，理解代码也变得更困难。将参数数目减至最少，尤其是可选参数的数目，可以自动减少对 `PREFERRED PARAMETER` 的需求。
+The addition `PREFERRED PARAMETER` makes it hard to see which parameter is actually supplied,
+making it harder to understand the code.
+Minimizing the number of parameters, especially optional ones,
+automatically reduces the need for `PREFERRED PARAMETER`.
 
-#### RETURN、EXPORT 或 CHANGE 恰有一个参数
+#### RETURN, EXPORT, or CHANGE exactly one parameter
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数数目](#参数数目) > [本节](#returnexport-或-change-恰有一个参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Number](#parameter-number) > [This section](#return-export-or-change-exactly-one-parameter)
 
-好的方法只做_一件事_，而这也应该反映在方法恰好只返回一个值。如果方法的输出参数相互之间_没有_联系，则说明您的方法做了多件事，则应该对其进行拆分。
+A good method does _one thing_, and that should be reflected by the method also returning exactly one thing.
+If the output parameters of your method do _not_ form a logical entity,
+your method does more than one thing and you should split it.
 
-在某些情况下，输出是由多件事组成的逻辑实体。通过返回结构或对象可以很容易表示：
+There are cases where the output is a logical entity that consists of multiple things.
+These are easiest represented by returning a structure or object:
 
 ```ABAP
 TYPES:
@@ -1957,7 +2332,7 @@ METHODS check_business_partners
     VALUE(result)     TYPE check_result.
 ```
 
-而不是
+instead of
 
 ```ABAP
 " anti-pattern
@@ -1970,9 +2345,11 @@ METHODS check_business_partners
     messages          TYPE /bobf/t_frw_message.
 ```
 
-特别是与多个 EXPORTING 参数相比，在该方法中人们可以使用函数式调用，您可以不考虑 `IS SUPPLIED`，并且避免出现人们意外忘记检索重要的 `ERROR_OCCURRED` 信息的情况。
+Especially in comparison to multiple EXPORTING parameters, this allows people to use the functional call style,
+spares you having to think about `IS SUPPLIED` and saves people from accidentally forgetting
+to retrieve a vital `ERROR_OCCURRED` information.
 
-不使用，而是考虑根据有意义的调用模式拆分方法去替代多个可选的输出参数：
+Instead of multiple optional output parameters, consider splitting the method according to meaningful call patterns:
 
 ```ABAP
 TYPES:
@@ -1995,13 +2372,13 @@ METHODS check_and_report
     VALUE(result)     TYPE check_result.
 ```
 
-### 参数类型
+### Parameter Types
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#参数类型)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#parameter-types)
 
-#### RETURNING 优于 EXPORTING
+#### Prefer RETURNING to EXPORTING
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数类型](#参数类型) > [本节](#returning-优于-exporting)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Types](#parameter-types) > [This section](#prefer-returning-to-exporting)
 
 ```ABAP
 METHODS square
@@ -2013,7 +2390,7 @@ METHODS square
 DATA(result) = square( 42 ).
 ```
 
-而不是毫无必要地加长
+Instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -2030,13 +2407,17 @@ square(
     result = DATA(result) ).
 ```
 
-`RETURNING` 不仅可以使调用更短，还允许使用方法链并防止[相同输入和输出错误](#如果输入和输出可能相同则要当心)。
+`RETURNING` not only makes the call shorter,
+it also allows method chaining and prevents [same-input-and-output errors](#take-care-if-input-and-output-could-be-the-same).
 
-#### RETURNING 大表通常没有问题
+#### RETURNING large tables is usually okay
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数类型](#参数类型) > [本节](#returning-大表通常没有问题)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Types](#parameter-types) > [This section](#returning-large-tables-is-usually-okay)
 
-尽管 ABAP 语言文档和性能指南有不一样的说法，但我们很少遇到在 VALUE 参数中传递大表或深度嵌套表_确实_导致性能问题的情况。因此，我们建议正常使用
+Although the ABAP language documentation and performance guides say otherwise,
+we rarely encounter cases where handing over a large or deeply-nested table in a VALUE parameter
+_really_ causes performance problems.
+We therefore recommend to generally use
 
 ```ABAP
 METHODS get_large_table
@@ -2050,7 +2431,8 @@ ENDMETHOD.
 DATA(my_table) = get_large_table( ).
 ```
 
-只有在您的个别情况有实际证据（= 不良的性能衡量）时，您才应该使用更繁琐的过程式调用
+Only if there is actual proof (= a bad performance measurement) for your individual case
+should you resort to the more cumbersome procedural style
 
 ```ABAP
 " anti-pattern
@@ -2065,11 +2447,14 @@ ENDMETHOD.
 get_large_table( IMPORTING result = DATA(my_table) ).
 ```
 
-> 本节与 ABAP Programming Guidelines 和代码分析器检查相矛盾，二者都建议应通过引用导出大表，以避免性能下降。但我们始终未能重现任何性能下降和内存不足情况，也未收到有关内核优化（通常可提高 RETURNING 性能）的通知。
+> This section contradicts the ABAP Programming Guidelines and Code Inspector checks,
+> both of whom suggest that large tables should be EXPORTED by reference to avoid performance deficits.
+> We consistently failed to reproduce any performance and memory deficits
+> and received notice about kernel optimization that generally improves RETURNING performance.
 
-#### 单独使用 RETURNING 或 EXPORTING 或 CHANGING，而不要组合使用
+#### Use either RETURNING or EXPORTING or CHANGING, but not a combination
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数类型](#参数类型) > [本节](#单独使用-returning-或-exporting-或-changing而不要组合使用)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Types](#parameter-types) > [This section](#use-either-returning-or-exporting-or-changing-but-not-a-combination)
 
 ```ABAP
 METHODS copy_class
@@ -2082,7 +2467,7 @@ METHODS copy_class
     /clean/class_copy_failure.
 ```
 
-而不是混合使用，例如
+instead of confusing mixtures like
 
 ```ABAP
 " anti-pattern
@@ -2097,9 +2482,10 @@ METHODS copy_class
     package            TYPE devclass.
 ```
 
-不同种类的输出参数表明该方法做了多件事。这使读者感到困惑，并使调用该方法变得不必要的复杂。
+Different sorts of output parameters is an indicator that the method does more than one thing.
+It confuses the reader and makes calling the method needlessly complicated.
 
-此规则的可接受的例外情况是使用他们的输入构建他们的输出：
+An acceptable exception to this rule may be builders that consume their input while building their output:
 
 ```ABAP
 METHODS build_tree
@@ -2109,7 +2495,7 @@ METHODS build_tree
     VALUE(result) TYPE REF TO tree.
 ```
 
-然而，可以把输入对象化参数使这些内容更加清晰：
+However, even those can be made clearer by objectifying the input:
 
 ```ABAP
 METHODS build_tree
@@ -2119,11 +2505,12 @@ METHODS build_tree
     VALUE(result) TYPE REF TO tree.
 ```
 
-#### 在合适时保守地使用 CHANGING
+#### Use CHANGING sparingly, where suited
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数类型](#参数类型) > [本节](#在合适时保守地使用-changing)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Types](#parameter-types) > [This section](#use-changing-sparingly-where-suited)
 
-`CHANGING` 应预留给以下情况：现有局部变量已填充仅在某些位置需要更新：
+`CHANGING` should be reserved for cases where an existing local variable
+that is already filled is updated in only some places:
 
 ```ABAP
 METHODS update_references
@@ -2139,13 +2526,15 @@ METHOD update_references.
 ENDMETHOD.
 ```
 
-不要强迫调用者仅仅为了提供 `CHANGING` 参数而引入不必要的局部变量。不要使用 `CHANGING` 参数来初始填充先前为空的变量。
+Do not force your callers to introduce unnecessary local variables only to supply your `CHANGING` parameter.
+Do not use `CHANGING` parameters to initially fill a previously empty variable.
 
-#### 拆分方法而非使用布尔输入参数
+#### Split method instead of Boolean input parameter
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数类型](#参数类型) > [本节](#拆分方法而非使用布尔输入参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Types](#parameter-types) > [This section](#split-method-instead-of-boolean-input-parameter)
 
-布尔输入参数通常表示一个方法做_两_件事，而不是一件。
+Boolean input parameters are often an indicator
+that a method does _two_ things instead of one.
 
 ```ABAP
 " anti-pattern
@@ -2154,21 +2543,23 @@ METHODS update
     do_save TYPE abap_bool.
 ```
 
-同样，使用单个（因此未命名的）布尔参数的方法调用往往会混淆参数的含义。
+Also, method calls with a single - and thus unnamed - Boolean parameter
+tend to obscure the parameter's meaning.
 
 ```ABAP
 " anti-pattern
 update( abap_true ).  " what does 'true' mean? synchronous? simulate? commit?
 ```
 
-拆分方法可以简化方法的代码并更好地描述不同的意图
+Splitting the method may simplify the methods' code
+and describe the different intentions better
 
 ```ABAP
 update_without_saving( ).
 update_and_save( ).
 ```
 
-普遍认为，对布尔变量使用 setter 是可以的：
+Common perception suggests that setters for Boolean variables are okay:
 
 ```ABAP
 METHODS set_is_deleted
@@ -2176,19 +2567,23 @@ METHODS set_is_deleted
     new_value TYPE abap_bool.
 ```
 
-> 有关详细信息，请参阅[1](http://www.beyondcode.org/articles/booleanVariables.html)[2](https://silkandspinach.net/2004/07/15/avoid-boolean-parameters/)[3](http://jlebar.com/2011/12/16/Boolean_parameters_to_API_functions_considered_harmful..html)
+> Read more in
+> [1](http://www.beyondcode.org/articles/booleanVariables.html)
+> [2](https://silkandspinach.net/2004/07/15/avoid-boolean-parameters/)
+> [3](http://jlebar.com/2011/12/16/Boolean_parameters_to_API_functions_considered_harmful..html)
 
-### 参数名称
+### Parameter Names
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#参数名称)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#parameter-names)
 
-#### 考虑调用 RETURNING 参数 RESULT
+#### Consider calling the RETURNING parameter RESULT
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数名称](#参数名称) > [本节](#考虑调用-returning-参数-result)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Names](#parameter-names) > [This section](#consider-calling-the-returning-parameter-result)
 
-好的方法名称通常可以让`RETURNING` 参数不需要自己的名称这样的好效果。参数名只需要模仿方法名称或重复一些显而易见的内容。
+Good method names are usually so good that the `RETURNING` parameter does not need a name of its own.
+The name would do little more than parrot the method name or repeat something obvious.
 
-重复成员名称甚至可能产生冲突，需要添加多余的 `me->` 才能解决。
+Repeating a member name can even produce conflicts that need to be resolved by adding a superfluous `me->`.
 
 ```ABAP
 " anti-pattern
@@ -2201,19 +2596,22 @@ METHOD get_name.
 ENDMETHOD.
 ```
 
-在此类情况下，只需把参数命名为 `RESULT`，或者类似于 `RV_RESULT` 的名称（如果您喜欢用匈牙利表示法）。
+In these cases, simply call the parameter `RESULT`, or something like `RV_RESULT` if you prefer Hungarian notation.
 
-例如在针对方法链返回 `me` 的方法中，或在创建某些对象但不返回创建的实体而仅返回其键值的方法中，如果参数代表的含义_不_明确，则需要为`RETURNING`参数起个名字。
+Name the `RETURNING` parameter if it is _not_ obvious what it stands for,
+for example in methods that return `me` for method chaining,
+or in methods that create something but don't return the created entity but only its key or so.
 
-### 参数初始化
+### Parameter Initialization
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#参数初始化)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#parameter-initialization)
 
-#### 清除或覆盖 EXPORTING 引用参数
+#### Clear or overwrite EXPORTING reference parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数初始化](#参数初始化) > [本节](#清除或覆盖-exporting-引用参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Initialization](#parameter-initialization) > [This section](#clear-or-overwrite-exporting-reference-parameters)
 
-引用参数是指可预先填充的现有内存区域。清除或覆盖它们以提供可靠的数据：
+Reference parameters refer to existing memory areas that may be filled beforehand.
+Clear or overwrite them to provide reliable data:
 
 ```ABAP
 METHODS square
@@ -2232,15 +2630,18 @@ METHOD square.
 ENDMETHOD.
 ```
 
-> 代码分析器和检查管理器会指出从`EXPORTING` 变量未写入值。使用这些静态检查来避免这个可能相当模糊的错误源。
+> Code inspector and Checkman point out `EXPORTING` variables that are never written.
+Use these static checks to avoid this otherwise rather obscure error source.
 
-##### 如果输入和输出可能相同则要当心
+##### Take care if input and output could be the same
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数初始化](#参数初始化) > [本节](#如果输入和输出可能相同则要当心)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Initialization](#parameter-initialization) > [This section](#take-care-if-input-and-output-could-be-the-same)
 
-通常，在方法体里，类型和数据声明之后第一件事把参数清空是一个好主意。这使该语句易于辨别，并避免了后续语句意外使用原来的值。
+Generally, it is a good idea to clear the parameter as a first thing in the method after type and data declarations.
+This makes the statement easy to spot and avoids that the still-contained value is accidentally used by later statements.
 
-但是，某些参数配置可能会使用相同的变量作为输入和输出。在这种情况下，之前的 `CLEAR` 语句会在使用输入值之前将其删除，从而产生错误的结果。
+However, some parameter configurations could use the same variable as input and output.
+In this case, an early `CLEAR` would delete the input value before it can be used, producing wrong results.
 
 ```ABAP
 " anti-pattern
@@ -2258,13 +2659,16 @@ METHOD square_dirty.
 ENDMETHOD.
 ```
 
-考虑用 `RETURNING` 替换 `EXPORTING` 来重新设计此类方法。还可以考虑在单个结果计算语句中覆盖 `EXPORTING` 参数。如果都不适合，只能稍后执行 `CLEAR`。
+Consider redesigning such methods by replacing `EXPORTING` with `RETURNING`.
+Also consider overwriting the `EXPORTING` parameter in a single result calculation statement.
+If neither fits, resort to a late `CLEAR`.
 
-#### 勿清除 VALUE 参数
+#### Don't clear VALUE parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [参数初始化](#参数初始化) > [本节](#勿清除-value-参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Parameter Initialization](#parameter-initialization) > [This section](#dont-clear-value-parameters)
 
-通过 `VALUE` 传递的参数会开辟新的独立内存，这些内存区域定义时为空。不要再清除这些区域：
+Parameters that work by `VALUE` are handed over as new, separate memory areas that are empty by definition.
+Don't clear them again:
 
 ```ABAP
 METHODS square
@@ -2276,7 +2680,7 @@ METHOD square.
 ENDMETHOD.
 ```
 
-`RETURNING` 参数始终是 `VALUE` 参数，因此您永远不需要清除这些参数：
+`RETURNING` parameters are always `VALUE` parameters, so you never have to clear them:
 
 ```ABAP
 METHODS square
@@ -2288,31 +2692,36 @@ METHOD square.
 ENDMETHOD.
 ```
 
-### 方法体
+### Method Body
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#方法体)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#method-body)
 
-#### 做且仅做一件事，把它做好
+#### Do one thing, do it well, do it only
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法体](#方法体) > [本节](#做且仅做一件事把它做好)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Method Body](#method-body) > [This section](#do-one-thing-do-it-well-do-it-only)
 
-一个方法应该做一件事，且只能做一件事。应该采用最好的方法做这件事。
+A method should do one thing, and only one thing.
+It should do it in the best way possible.
 
-如果满足以下条件，一个方法可能做一件事：
+A method likely does one thing if
 
-- [输入参数很少](#力图减少-importing-参数最好少于三个)
-- [不包含布尔参数](#拆分方法而非使用布尔输入参数)
-- [只有一个输出参数](#returnexport-或-change-恰有一个参数)
-- [很小](#保持方法精简)
-- [将抽象降一级](#将抽象降一级)
-- 您无法提取有意义的其他方法
-- 您无法将其语句分组为有意义的部分
+- it has [few input parameters](#aim-for-few-importing-parameters-at-best-less-than-three)
+- it [doesn't include Boolean parameters](#split-method-instead-of-boolean-input-parameter)
+- it has [exactly one output parameter](#return-export-or-change-exactly-one-parameter)
+- it is [small](#keep-methods-small)
+- it [descends one level of abstraction](#descend-one-level-of-abstraction)
+- it only [throws one type of exception](#throw-one-type-of-exception)
+- you cannot extract meaningful other methods
+- you cannot meaningfully group its statements into sections
 
-#### 关注愉快路径或错误处理，但非两者兼顾
+#### Focus on the happy path or error handling, but not both
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法体](#方法体) > [本节](#关注愉快路径或错误处理但非两者兼顾)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Method Body](#method-body) > [This section](#focus-on-the-happy-path-or-error-handling-but-not-both)
 
-由于[_做且仅做一件事，把它做好_](#做且仅做一件事把它做好)规则的专业化要求，方法应该遵循其建立的愉快路径，或在无法建立愉快路径的情况下采用其他错误处理方式，但也可能出现第三种情况。
+As a specialization of the rule [_Do one thing, do it well, do it only_](#do-one-thing-do-it-well-do-it-only),
+a method should either follow the happy-path it's built for,
+or the error-handling-detour in case it can't,
+but probably not both.
 
 ```ABAP
 " anti-pattern
@@ -2331,7 +2740,7 @@ METHOD append_xs.
 ENDMETHOD.
 ```
 
-可以分解为
+Can be decomposed into
 
 ```ABAP
 METHOD append_xs.
@@ -2352,7 +2761,7 @@ METHOD validate.
 ENDMETHOD.
 ```
 
-或者，强调验证部分
+or, to stress the validation part
 
 ```ABAP
 METHOD append_xs.
@@ -2374,11 +2783,12 @@ METHOD append_xs_without_check.
 ENDMETHOD.
 ```
 
-#### 将抽象降一级
+#### Descend one level of abstraction
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法体](#方法体) > [本节](#将抽象降一级)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Method Body](#method-body) > [This section](#descend-one-level-of-abstraction)
 
-方法中的语句应处于方法本身抽象级别的下一级。相应地，这些语句都应处于相同的抽象级别。
+Statements in a method should be one level of abstraction below the method itself.
+Correspondingly, they should all be on the same level of abstraction.
 
 ```ABAP
 METHOD create_and_publish.
@@ -2387,7 +2797,7 @@ METHOD create_and_publish.
 ENDMETHOD.
 ```
 
-而不是混合使用低级（`trim`、`to_upper`、...）和高级（`publish`、...）概念，例如
+instead of confusing mixtures of low level (`trim`, `to_upper`, ...) and high level (`publish`, ...) concepts like
 
 ```ABAP
 " anti-pattern
@@ -2399,13 +2809,15 @@ METHOD create_and_publish.
 ENDMETHOD.
 ```
 
-找出正确抽象级别的可靠方法是：让该方法的作者用简短的几个单词来解释该方法的功能，而不需要查看代码。他列的功能项就应该是方法应调用的子方法或应执行的语句。
+A reliable way to find out what the right level of abstraction is is this:
+Let the method's author explain what the method does in few, short words, without looking at the code.
+The bullets (s)he numbers are the sub-methods the method should call or the statements it should execute.
 
-#### 保持方法精简
+#### Keep methods small
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [方法体](#方法体) > [本节](#保持方法精简)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Method Body](#method-body) > [This section](#keep-methods-small)
 
-方法应少于 20 条语句，最好为 3 至 5 条语句。
+Methods should have less than 20 statements, optimal around 3 to 5 statements.
 
 ```ABAP
 METHOD read_and_parse_version_filters.
@@ -2415,7 +2827,7 @@ METHOD read_and_parse_version_filters.
 ENDMETHOD.
 ```
 
-仅通过下面的 `DATA` 声明就足以看出相关的方法不止做一件事：
+The following `DATA` declaration alone is sufficient to see that the surrounding method does way more than one thing:
 
 ```ABAP
 " anti-pattern
@@ -2445,7 +2857,8 @@ DATA:
   new_clskey_save TYPE seoclskey.
 ```
 
-当然，在某些情况下，进一步缩小较大的方法没有任何意义。这是完全可以的，只要该方法始终[专注于一件事](#做且仅做一件事把它做好)：
+Of course there are occasions where it does not make sense to reduce a larger method further.
+This is perfectly okay as long as the method remains [focused on one thing](#do-one-thing-do-it-well-do-it-only):
 
 ```ABAP
 METHOD decide_what_to_do.
@@ -2464,7 +2877,7 @@ METHOD decide_what_to_do.
 ENDMETHOD.
 ```
 
-但是，验证冗长的代码是否隐藏了更合适的模式仍然有意义：
+However, it still makes sense to validate whether the verbose code hides a more suitable pattern:
 
 ```ABAP
 METHOD decide_what_to_do.
@@ -2472,17 +2885,18 @@ METHOD decide_what_to_do.
 ENDMETHOD.
 ```
 
-> 将方法切割过小可能会对性能产生不良影响，因为这会增加方法调用的次数。[_顾及性能_一节](#顾及性能)提供了有关如何平衡整洁代码和性能的指南。
+> Cutting methods very small can have bad impact on performance because it increases the number of method calls.
+> The [section _Mind the performance_](#mind-the-performance) gives guidance on how to balance Clean Code and performance.
 
-### 控制流
+### Control flow
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [本节](#控制流)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [This section](#control-flow)
 
-#### 快速失败
+#### Fail fast
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [控制流](#控制流) > [本节](#快速失败)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Control flow](#control-flow) > [This section](#fail-fast)
 
-尽早验证并处理失败情景：
+Validate and fail as early as possible:
 
 ```ABAP
 METHOD do_something.
@@ -2494,7 +2908,7 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-后面再进行验证更难以辨别和理解，并且可能已经浪费了很多资源。
+Later validations are harder to spot and understand and may have already wasted resources to get there.
 
 ```ABAP
 " anti-pattern
@@ -2507,13 +2921,14 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-#### CHECK 对 RETURN
+#### CHECK vs. RETURN
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [控制流](#控制流) > [本节](#check-对-return)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Control flow](#control-flow) > [This section](#check-vs-return)
 
-如果输入不符合预期，是否应使用 `CHECK` 或 `RETURN` 退出方法，人们对此并未达成共识。
+There is no consensus on whether you should use `CHECK` or `RETURN` to exit a method
+if the input doesn't meet expectations.
 
-尽管 `CHECK` 显式提供了较短的语法，
+While `CHECK` definitely provides the shorter syntax
 
 ```ABAP
 METHOD read_customizing.
@@ -2522,7 +2937,8 @@ METHOD read_customizing.
 ENDMETHOD.
 ```
 
-该语句的名称未能说明条件失败时会发生什么情况，因此长格式可能更易于人们理解：
+the statement's name doesn't reveal what happens if the condition fails,
+such that people will probably understand the long form better:
 
 ```ABAP
 METHOD read_customizing.
@@ -2530,75 +2946,86 @@ METHOD read_customizing.
     RETURN.
   ENDIF.
   " do whatever needs doing
-ENDMETHOD:
+ENDMETHOD.
 ```
 
-通过反向验证并采用单向控制流，完全可以避免此类问题
+You can avoid the question completely by reversing the validation
+and adopting a single-return control flow
 
 ```ABAP
 METHOD read_customizing.
   IF keys IS NOT INITIAL.
     " do whatever needs doing
   ENDIF.
-ENDMETHOD:
+ENDMETHOD.
 ```
 
-无论如何，请考虑不返回任何内容是否真的合适。方法应该提供有意义的结果，即已填充的返回参数或异常。在许多情况下，不返回任何内容都类似于返回 `null`，应该避免这种情况。
+In any case, consider whether returning nothing is really the appropriate behavior.
+Methods should provide a meaningful result, meaning either a filled return parameter, or an exception.
+Returning nothing is in many cases similar to returning `null`, which should be avoided.
 
-> [ABAP Programming Guidelines 中的_退出过程_一节](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenexit_procedure_guidl.htm)建议在此实例中使用 `CHECK`。社区讨论表明该语句如此不清晰，许多人无法理解程序的行为。
+> The [section _Exiting Procedures_ in the ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenexit_procedure_guidl.htm)
+> recommends using `CHECK` in this instance.
+> Community discussion suggests that the statement is so unclear
+> that many people will not understand the program's behavior.
 
-#### 避免在其他位置使用 CHECK
+#### Avoid CHECK in other positions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [方法](#方法) > [控制流](#控制流) > [本节](#避免在其他位置使用-check)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Methods](#methods) > [Control flow](#control-flow) > [This section](#avoid-check-in-other-positions)
 
-不要在方法的初始化部分以外使用 `CHECK`。该语句在不同位置的行为方式不同，可能会造成不明确、意想不到的影响。
+Do not use `CHECK` outside of the initialization section of a method.
+The statement behaves differently in different positions and may lead to unclear, unexpected effects.
 
-例如，[`LOOP` 中的 `CHECK` 结束当前迭代并继续下一个](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/abapcheck_loop.htm)；人们原本可能期望它结束方法或退出循环。
+For example,
+[`CHECK` in a `LOOP` ends the current iteration and proceeds with the next one](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/abapcheck_loop.htm);
+people might accidentally expect it to end the method or exit the loop.
+Prefer using an `IF` statement in combination with `CONTINUE` instead, since `CONTINUE` only can be used in loops.
 
-> 基于 [ABAP Programming Guidelines 中的_退出过程_一节](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenexit_procedure_guidl.htm)。请注意，这与[循环中 `CHECK` 的关键字引用](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/abapcheck_loop.htm)相矛盾。
+> Based on the [section _Exiting Procedures_ in the ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abenexit_procedure_guidl.htm).
+> Note that this contradicts the [keyword reference for `CHECK` in loops](https://help.sap.com/doc/abapdocu_752_index_htm/7.52/en-US/abapcheck_loop.htm).
 
-## 错误处理
+## Error Handling
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#错误处理)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#error-handling)
 
-### 消息
+### Messages
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [本节](#消息)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [This section](#messages)
 
-#### 使消息易于查找
+#### Make messages easy to find
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [消息](#消息) > [本节](#使消息易于查找)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Messages](#messages) > [This section](#make-messages-easy-to-find)
 
-要使通过事务 SE91 的使用位置搜索更容易找到消息，请使用以下模式：
+To make messages easy to find through a where-used search from transaction SE91, use the following pattern:
 
 ```ABAP
 MESSAGE e001(ad) INTO DATA(message).
 ```
 
-如果不需要变量 `message`，请添加编译指示 `##NEEDED`：
+In case variable `message` is not needed, add the pragma `##NEEDED`:
 
 ```ABAP
 MESSAGE e001(ad) INTO DATA(message) ##NEEDED.
 ```
 
-避免使用以下模式：
+Avoid the following:
 
 ```ABAP
 " anti-pattern
 IF 1 = 2. MESSAGE e001(ad). ENDIF.
 ```
 
-这是一种反面模式，因为：
-- 其中包含不可达代码。
-- 其测试的条件永远不可能真正实现对等。
+This is an anti-pattern since:
+- It contains unreachable code.
+- It tests a condition which can never be true for equality.
 
-### 返回代码
+### Return Codes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [本节](#返回代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [This section](#return-codes)
 
-#### 异常优于返回代码
+#### Prefer exceptions to return codes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [返回代码](#返回代码) > [本节](#异常优于返回代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Return Codes](#return-codes) > [This section](#prefer-exceptions-to-return-codes)
 
 ```ABAP
 METHOD try_this_and_that.
@@ -2606,7 +3033,7 @@ METHOD try_this_and_that.
 ENDMETHOD.
 ```
 
-而不是
+instead of
 
 ```ABAP
 " anti-pattern
@@ -2615,21 +3042,28 @@ METHOD try_this_and_that.
 ENDMETHOD.
 ```
 
-与返回代码相比，异常有许多优点：
+Exceptions have multiple advantages over return codes:
 
-- 异常能保持方法签名的干净整洁：以 `RETURNING` 参数形式返回方法结果，同时仍抛出异常。返回代码使用其他参数进行错误处理，会污染您的签名。
+- Exceptions keep your method signatures clean:
+you can return the result of the method as a `RETURNING` parameter and still throw exceptions alongside.
+Return codes pollute your signatures with additional parameters for error handling.
 
-- 调用者不必立即做出反应，只需按愉快的路径写下代码。异常处理 `CATCH` 可在方法的末尾执行，也可以完全在外部执行。
+- The caller doesn't have to react to them immediately.
+He can simply write down the happy path of his code.
+The exception-handling `CATCH` can be at the very end of his method, or completely outside.
 
-- 异常可以通过其属性和方法提供有关错误的详细信息。而返回代码则要求您自行设计另一个解决方案，例如还要返回日志。
+- Exceptions can provide details on the error in their attributes and through methods.
+Return codes require you to devise a different solution on your own, such as also returning a log.
 
-- 开发环境通过语法错误提醒调用者处理异常。而在没有任何人注意的情况下，返回代码可能会被不小心忽略。
+- The environment reminds the caller with syntax errors to handle exceptions.
+Return codes can be accidentally ignored without anybody noticing.
 
-#### 别让故障溜走
+#### Don't let failures slip through
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [返回代码](#返回代码) > [本节](#别让故障溜走)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Return Codes](#return-codes) > [This section](#dont-let-failures-slip-through)
 
-如果确实必须使用返回代码，例如因为调用了不在自己控制范围内的函数和较旧的代码，务必确保别让故障溜走。
+If you do have to use return codes, for example because you call Functions and older code not under your control,
+make sure you don't let failures slip through.
 
 ```ABAP
 DATA:
@@ -2647,13 +3081,13 @@ IF response-type = 'E'.
 ENDIF.
 ```
 
-### 异常
+### Exceptions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [本节](#异常)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [This section](#exceptions)
 
-#### 异常针对的是错误，而不是正常情况
+#### Exceptions are for errors, not for regular cases
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [异常](#异常) > [本节](#异常针对的是错误而不是正常情况)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Exceptions](#exceptions) > [This section](#exceptions-are-for-errors-not-for-regular-cases)
 
 ```ABAP
 " anti-pattern
@@ -2664,7 +3098,7 @@ METHODS entry_exists_in_db
     cx_not_found_exception.
 ```
 
-如果情况是正常、有效的，应该使用常规的结果参数进行处理。
+If something is a regular, valid case, it should be handled with regular result parameters.
 
 ```ABAP
 METHODS entry_exists_in_db
@@ -2674,7 +3108,7 @@ METHODS entry_exists_in_db
     VALUE(result) TYPE abap_bool.
 ```
 
-异常应该反映错误情况，留到您不希望看到的情况下使用。
+Exceptions should be reserved for cases that you don't expect and that reflect error situations.
 
 ```ABAP
 METHODS assert_user_input_is_valid
@@ -2684,11 +3118,13 @@ METHODS assert_user_input_is_valid
     cx_bad_user_input.
 ```
 
-误用异常会误导读者认为实际上一切都顺利的地方出了问题。异常也比正常代码慢得多，因为它们需要进行构建，往往要收集大量上下文信息。
+Misusing exceptions misguides the reader into thinking something went wrong, when really everything is just fine.
+Exceptions are also much slower than regular code because they need to be constructed
+and often gather lots of context information.
 
-#### 使用基于类的异常
+#### Use class-based exceptions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [异常](#异常) > [本节](#使用基于类的异常)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Exceptions](#exceptions) > [This section](#use-class-based-exceptions)
 
 ```ABAP
 TRY.
@@ -2697,7 +3133,7 @@ TRY.
 ENDTRY.
 ```
 
-过时的非基于类的异常与返回代码具有相同的功能，不应再使用。
+The outdated non-class-based exceptions have the same features as return codes and shouldn't be used anymore.
 
 ```ABAP
 " anti-pattern
@@ -2707,24 +3143,28 @@ get_component_types(
     OTHERS              = 2 ).
 ```
 
-### 抛出
+### Throwing
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [本节](#抛出)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [This section](#throwing)
 
-#### 使用各自的超类
+#### Use own super classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#使用各自的超类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#use-own-super-classes)
 
 ```ABAP
 CLASS cx_fra_static_check DEFINITION ABSTRACT INHERITING FROM cx_static_check.
 CLASS cx_fra_no_check DEFINITION ABSTRACT INHERITING FROM cx_no_check.
 ```
 
-考虑为应用程序的每种异常类型创建抽象超类，而不是直接对基础类进行子类化。允许您对_自己的_所有异常执行 `CATCH`。使您可以向所有异常添加通用功能，例如特殊文本处理。`ABSTRACT` 防止人们意外地直接使用这些非描述性错误。
+Consider creating abstract super classes for each exception type for your application,
+instead of sub-classing the foundation classes directly.
+Allows you to `CATCH` all _your_ exceptions.
+Enables you to add common functionality to all exceptions, such as special text handling.
+`ABSTRACT` prevents people from accidentally using these non-descriptive errors directly.
 
-#### 抛出一种类型的异常
+#### Throw one type of exception
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#抛出一种类型的异常)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#throw-one-type-of-exception)
 
 ```ABAP
 METHODS generate
@@ -2732,7 +3172,10 @@ METHODS generate
     cx_generation_error.
 ```
 
-在绝大多数情况下，抛出多种类型的异常没有任何用处。调用者通常既不感兴趣，也没法区分错误情况，因此经常会以相同的方式处理它们——既然如此，为什么一开始要区分它们呢？
+In the vast majority of cases, throwing multiple types of exceptions has no use.
+The caller usually is neither interested nor able to distinguish the error situations.
+He will therefore typically handle them all in the same way -
+and if this is the case, why distinguish them in the first place?
 
 ```ABAP
 " anti-pattern
@@ -2743,11 +3186,13 @@ METHODS generate
     cx_model_read_error.
 ```
 
-识别不同错误情况的更好解决方案是使用一种异常类型，但添加允许（但不要求）对个别错误情况做出反应的子类，如[使用子类以便调用者能够区分错误情况](#使用子类以便调用者能够区分错误情况)中所述。
+A better solution to recognize different error situations is using one exception type
+but adding sub-classes that allow - but don't require - reacting to individual error situations,
+as described in [Use sub-classes to enable callers to distinguish error situations](#use-sub-classes-to-enable-callers-to-distinguish-error-situations).
 
-#### 使用子类以便调用者能够区分错误情况
+#### Use sub-classes to enable callers to distinguish error situations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#使用子类以便调用者能够区分错误情况)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#use-sub-classes-to-enable-callers-to-distinguish-error-situations)
 
 ```ABAP
 CLASS cx_bad_generation_variable DEFINITION INHERITING FROM cx_generation_error.
@@ -2764,7 +3209,7 @@ TRY.
 ENDTRY.
 ```
 
-如果有许多不同的错误情况，则改用错误代码：
+If there are many different error situations, use error codes instead:
 
 ```ABAP
 CLASS cx_generation_error DEFINITION ...
@@ -2789,11 +3234,13 @@ TRY.
 ENDTRY.
 ```
 
-#### 针对可应对的异常抛出 CX_STATIC_CHECK
+#### Throw CX_STATIC_CHECK for manageable exceptions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#针对可应对的异常抛出-cx_static_check)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#throw-cx_static_check-for-manageable-exceptions)
 
-如果预期会出现异常并可由接收者合理处理，则抛出继承自 `CX_STATIC_CHECK` 的可控异常：用户输入验证失败，缺少存在后备的资源，等等。
+If an exception can be expected to occur and be reasonably handled by the receiver,
+throw a checked exception inheriting from `CX_STATIC_CHECK`: failing user input validation,
+missing resource for which there are fallbacks, etc.
 
 ```ABAP
 CLASS cx_file_not_found DEFINITION INHERITING FROM cx_static_check.
@@ -2805,15 +3252,21 @@ METHODS read_file
     cx_file_not_found.
 ```
 
-这种异常类型_必须_在方法签名中给出，并且_必须_被捕获或转发以避免语法错误。这样，用户便能够清楚看到这种异常类型，确保其不会因意外的异常而感到惊讶，并负责对错误情况做出反应。
+This exception type _must_ be given in method signatures and _must_ be caught or forwarded to avoid syntax errors.
+It is therefore plain to see for the consumer and ensures that (s)he won't be surprised by an unexpected exception
+and will take care of reacting to the error situation.
 
-> 这与 [ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abenexception_category_guidl.htm) 一致，但与 [Robert C. Martin 所著的 _Clean Code_]（其中建议优先使用不可控异常）相矛盾；[异常](sub-sections/Exceptions.md)说明了其中的原因。
+> This is in sync with the [ABAP Programming Guidelines](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abenexception_category_guidl.htm)
+> but contradicts [Robert C. Martin's _Clean Code_],
+> which recommends to prefer unchecked exceptions;
+> [Exceptions](sub-sections/Exceptions.md) explains why.
 
-#### 针对通常不可恢复的情况抛出 CX_NO_CHECK
+#### Throw CX_NO_CHECK for usually unrecoverable situations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#针对通常不可恢复的情况抛出-cx_no_check)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#throw-cx_no_check-for-usually-unrecoverable-situations)
 
-如果异常严重到使接收端不太可能恢复正常工作，则使用 `CX_NO_CHECK`：无法读取必备资源，无法解决请求的依赖项等。
+If an exception is so severe that the receiver is unlikely to recover from it, use `CX_NO_CHECK`:
+failure to read a must-have resource, failure to resolve the requested dependency, etc.
 
 ```ABAP
 CLASS cx_out_of_memory DEFINITION INHERITING FROM cx_no_check.
@@ -2823,15 +3276,27 @@ METHODS create_guid
     VALUE(result) TYPE /bobf/conf_key.
 ```
 
-`CX_NO_CHECK` _不能_在方法签名中声明，因此它的出现会使用户感到意外。在无法恢复的情况下，这是可以接受的，因为用户无论如何都无法采取有效的操作。
+`CX_NO_CHECK` _cannot_ be declared in method signatures,
+such that its occurrence will come as a bad surprise to the consumer.
+In the case of unrecoverable situations, this is okay
+because the consumer will not be able to do anything useful about it anyway.
 
-但是，在某些情况下，用户实际上_可能_希望识别并应对这种故障。例如，如果依赖的管理器无法为请求的接口提供一个实现，则会抛出 `CX_NO_CHECK`，因为常规应用程序代码将无法继续执行。但是，可能某个测试报告试图实例化所有事物，以查看其是否有效，并且会简单地将失败报告为列表中的红色条目——该服务应该能够捕获并忽略异常，而不是被强制转储。
+However, there _may_ be cases where the consumer actually wants to recognize and react to this kind of failure.
+For example, a dependency manager could throw a `CX_NO_CHECK` if it's unable to provide an implementation
+for a requested interface because regular application code will not be able to continue.
+However, there may be a test report that tries to instantiate all kinds of things just to see if it's working,
+and that will report failure simply as a red entry in a list -
+this service should be able to catch and ignore the exception instead of being forced to dump.
 
-#### 针对可避免的异常考虑 CX_DYNAMIC_CHECK
+#### Consider CX_DYNAMIC_CHECK for avoidable exceptions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#针对可避免的异常考虑-cx_dynamic_check)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#consider-cx_dynamic_check-for-avoidable-exceptions)
 
-`CX_DYNAMIC_CHECK` 的用例很少见，通常我们建议使用其他异常类型。但是，如果调用者对是否可能发生异常完全自主控制，您可能要考虑使用这种异常来代替 `CX_STATIC_CHECK`。
+Use cases for `CX_DYNAMIC_CHECK` are rare,
+and in general we recommend to resort to the other exception types.
+However, you may want to consider this kind of exception
+as a replacement for `CX_STATIC_CHECK` if the caller has full,
+conscious control over whether an exception can occur.
 
 ```ABAP
 DATA value TYPE decfloat.
@@ -2843,32 +3308,45 @@ cl_abap_math=>get_db_length_decs(
     length = DATA(length) ).
 ```
 
-例如，使用 `cl_abap_math` 类的 `get_db_length_decs` 方法，它告诉您十进制浮点数的位数和小数位数。如果输入参数未反映十进制浮点数，此方法会引发动态异常 `cx_parameter_invalid_type`。通常，将为完全静态类型的变量调用此方法，以便开发人员知道该异常是否会发生。在这种情况下，动态异常能够让调用者省略不必要的 `CATCH` 子句。
+For example, consider the method `get_db_length_decs`
+of class `cl_abap_math`, that tells you the number of digits
+and decimal places of a decimal floating point number.
+This method raises the dynamic exception `cx_parameter_invalid_type`
+if the input parameter does not reflect a decimal floating point number.
+Usually, this method will be called
+for a fully and statically typed variable,
+such that the developer knows
+whether that exception can ever occur or not.
+In this case, the dynamic exception would enable the caller
+to omit the unnecessary `CATCH` clause.
 
-#### 针对完全不可恢复的情况进行转储
+#### Dump for totally unrecoverable situations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#针对完全不可恢复的情况进行转储)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#dump-for-totally-unrecoverable-situations)
 
-如果情况严重到可以完全确定接收者不太可能从中恢复，或者清楚地表明了编程错误，请转储而不是抛出异常：获取内存失败，对必须填充的表读取索引失败等。
+If a situation is so severe that you are totally sure the receiver is unlikely to recover from it,
+or that clearly indicates a programming error, dump instead of throwing an exception:
+failure to acquire memory, failed index reads on a table that must be filled, etc.
 
 ```ABAP
 RAISE SHORTDUMP TYPE cx_sy_create_object_error.  " >= NW 7.53
 MESSAGE x666(general).                           " < NW 7.53
 ```
 
-这种行为将阻止任何类型的用户事后执行任何有用的操作。请仅在确定时使用此功能。
+This behavior will prevent any kind of consumer from doing anything useful afterwards.
+Use this only if you are sure about that.
 
-#### RAISE EXCEPTION NEW 优于 RAISE EXCEPTION TYPE
+#### Prefer RAISE EXCEPTION NEW to RAISE EXCEPTION TYPE
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [抛出](#抛出) > [本节](#raise-exception-new-优于-raise-exception-type)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Throwing](#throwing) > [This section](#prefer-raise-exception-new-to-raise-exception-type)
 
-注：自 NW 7.52 起可用。
+Note: Available from NW 7.52 onwards.
 
 ```ABAP
 RAISE EXCEPTION NEW cx_generation_error( previous = exception ).
 ```
 
-通常短于毫无必要加长的
+in general is shorter than the needlessly longer
 
 ```ABAP
 RAISE EXCEPTION TYPE cx_generation_error
@@ -2876,7 +3354,7 @@ RAISE EXCEPTION TYPE cx_generation_error
     previous = exception.
 ```
 
-但是，如果大量添加 `MESSAGE`，可能需要坚持使用 `TYPE` 变式：
+However, if you make massive use of the addition `MESSAGE`, you may want to stick with the `TYPE` variant:
 
 ```ABAP
 RAISE EXCEPTION TYPE cx_generation_error
@@ -2885,13 +3363,13 @@ RAISE EXCEPTION TYPE cx_generation_error
   MESSAGE e136(messages).
 ```
 
-### 捕获
+### Catching
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [本节](#捕获)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [This section](#catching)
 
-#### 包裹外来异常而非任其侵入代码
+#### Wrap foreign exceptions instead of letting them invade your code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [错误处理](#错误处理) > [捕获](#捕获) > [本节](#包裹外来异常而非任其侵入代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Error Handling](#error-handling) > [Catching](#catching) > [This section](#wrap-foreign-exceptions-instead-of-letting-them-invade-your-code)
 
 ```ABAP
 METHODS generate RAISING cx_generation_failure.
@@ -2905,7 +3383,10 @@ METHOD generate.
 ENDMETHOD.
 ```
 
-[得墨忒耳律](https://en.wikipedia.org/wiki/Law_of_Demeter)建议将事物解耦，而转发来自其他组件的异常是违反了这一原则的。通过捕获这些异常并将其封装在自己的异常类型中，使自己独立于外部代码。
+The [Law of Demeter](https://en.wikipedia.org/wiki/Law_of_Demeter) recommends de-coupling things.
+Forwarding exceptions from other components violates this principle.
+Make yourself independent from the foreign code by catching those exceptions
+and wrapping them in an exception type of your own.
 
 ```ABAP
 " anti-pattern
@@ -2916,13 +3397,13 @@ METHOD generate.
 ENDMETHOD.
 ```
 
-## 注释
+## Comments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#注释)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#comments)
 
-### 用代码表达自己而不是靠注释
+### Express yourself in code, not in comments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#用代码表达自己而不是靠注释)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#express-yourself-in-code-not-in-comments)
 
 ```ABAP
 METHOD correct_day_to_last_in_month.
@@ -2942,7 +3423,7 @@ METHOD reduce_day_by_one.
 ENDMETHOD.
 ```
 
-而不是
+instead of
 
 ```ABAP
 " anti-pattern
@@ -2963,19 +3444,26 @@ METHOD fix_day_overflow.
 ENDMETHOD.
 ```
 
-整洁代码_并不是_禁止您为代码写注释，而是鼓励您想出_更好的_替代方法。只有想不出替代方法时才使用注释。
+Clean Code does _not_ forbid you to comment your code - it encourages you to exploit _better_ means,
+and resort to comments only if that fails.
 
-> 从性能的角度来看，这个例子受到了质疑，因为将方法缩减到如此之短会严重降低性能。样本测量表明，在运行速度上，重构代码要比原始的脏代码慢 2.13 倍。整洁代码修复输入 `31-02-2018` 需要 9.6 微秒，而脏代码只需 4.5 微秒。当频繁在高性能应用程序中运行此方法时，可能会对性能造成影响；但对于常规用户输入验证，应该是可以接受的。请参阅[顾及性能](#顾及性能)一节以处理整洁代码和性能问题。
+> This example has been challenged from a performance point of view,
+> claiming that cutting the methods so small worsens performance too much.
+> Sample measurements show that the refactored code is 2.13 times slower than the original dirty variant.
+> The clean variant takes 9.6 microseconds to fix the input `31-02-2018`, the dirty variant only 4.5 microseconds.
+> This may be a problem when the method is run very often in a high-performance application;
+> for regular user input validation, it should be acceptable.
+> Resort to the section [Mind the performance](#mind-the-performance) to deal with Clean Code and performance issues.
 
-### 注释绝非坏名称的借口
+### Comments are no excuse for bad names
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#注释绝非坏名称的借口)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#comments-are-no-excuse-for-bad-names)
 
 ```ABAP
 DATA(input_has_entries) = has_entries( input ).
 ```
 
-与其解释那些坏名称的真正含义或者您选择坏名称的原因，不如去实际改良名称。
+Improve your names instead of explaining what they really mean or why you chose bad ones.
 
 ```ABAP
 " anti-pattern
@@ -2983,16 +3471,17 @@ DATA(input_has_entries) = has_entries( input ).
 DATA(result) = check_table( input ).
 ```
 
-### 使用方法而非注释来对代码分段
+### Use methods instead of comments to segment your code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#使用方法而非注释来对代码分段)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#use-methods-instead-of-comments-to-segment-your-code)
 
 ```ABAP
 DATA(statement) = build_statement( ).
 DATA(data) = execute_statement( statement ).
 ```
 
-这样不但能够更加清晰地体现代码的意图、结构和依赖关系，同时还能避免在块与块之间因临时变量未清空引起的错误。
+This not only makes the intent, structure, and dependencies of the code much clearer,
+it also avoids carry-over errors when temporary variables aren't properly cleared between the sections.
 
 ```ABAP
 " anti-pattern
@@ -3009,16 +3498,16 @@ DATA(result_set) = adbc->execute_sql_query( statement ).
 result_set->next_package( IMPORTING data = data ).
 ```
 
-### 写注释是要解释为什么而非是什么
+### Write comments to explain the why, not the what
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#写注释是要解释为什么而非是什么)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#write-comments-to-explain-the-why-not-the-what)
 
 ```ABAP
 " can't fail, existence of >= 1 row asserted above
 DATA(first_line) = table[ 1 ].
 ```
 
-没人需要用自然语言重复代码
+Nobody needs repeating the code in natural language
 
 ```ABAP
 " anti-pattern
@@ -3026,9 +3515,9 @@ DATA(first_line) = table[ 1 ].
 SELECT * FROM d_alert_root WHERE key = key.
 ```
 
-### 设计应放到设计文档里而不是代码里
+### Design goes into the design documents, not the code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#设计应放到设计文档里而不是代码里)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#design-goes-into-the-design-documents-not-the-code)
 
 ```ABAP
 " anti-pattern
@@ -3038,13 +3527,17 @@ SELECT * FROM d_alert_root WHERE key = key.
 " Have a look at this and that to get the details.
 ```
 
-没人会认真读——真的。如果人们需要阅读教科书才能使用代码，这可能说明您的代码存在严重的设计问题，应通过其他方式解决。有些代码_确实_需要解释，而不仅仅是一行注释；在这种情况下，请考虑链接设计文档。
+Nobody reads that - seriously.
+If people need to read a textbook to be able to use your code,
+this may be an indicator that your code has severe design issues that you should solve otherwise.
+Some code _does_ need some explanation beyond a single line of comment;
+consider linking the design document in these cases.
 
-### 用 " 而非 * 加注释
+### Comment with ", not with *
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#用--而非--加注释)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#comment-with--not-with-)
 
-加引号的注释及其注释语句一同缩进
+Quote comments indent along with the statements they comment
 
 ```ABAP
 METHOD do_it.
@@ -3055,7 +3548,7 @@ METHOD do_it.
 ENDMETHOD.
 ```
 
-加星号的注释往往造成缩进异常
+Asterisked comments tend to indent to weird places
 
 ```ABAP
 " anti-pattern
@@ -3067,16 +3560,16 @@ METHOD do_it.
 ENDMETHOD.
 ```
 
-### 将注释放在与其相关的语句前面
+### Put comments before the statement they relate to
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#将注释放在与其相关的语句前面)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#put-comments-before-the-statement-they-relate-to)
 
 ```ABAP
 " delegate pattern
 output = calculate_result( input ).
 ```
 
-整洁性强于
+Clearer than
 
 ```ABAP
 " anti-pattern
@@ -3084,26 +3577,29 @@ output = calculate_result( input ).
 " delegate pattern
 ```
 
-且唐突的程度低于
+And less invasive than
 
 ```ABAP
 output = calculate_result( input ).  " delegate pattern
 ```
 
-### 删除代码而非将其注释掉
+### Delete code instead of commenting it
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#删除代码而非将其注释掉)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#delete-code-instead-of-commenting-it)
 
 ```ABAP
 " anti-pattern
 * output = calculate_result( input ).
 ```
 
-当您发现类似内容时，请将其删除。这里显然不需要代码，因为应用程序顺利运行并且所有测试都通过了。以后可根据版本历史记录再生删除的代码。如果需要永久保留某一段代码，请将其复制到文件或 `$TMP` 或 `HOME` 对象中。
+When you find something like this, delete it.
+The code is obviously not needed because your application works and all tests are green.
+Deleted code can be reproduced from the version history later on.
+If you need to preserve a piece of code permanently, copy it to a file or a `$TMP` or `HOME` object.
 
-### 使用 FIXME、TODO 和 XXX 并添加自己的标识
+### Use FIXME, TODO, and XXX and add your ID
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#使用-fixmetodo-和-xxx-并添加自己的标识)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#use-fixme-todo-and-xxx-and-add-your-id)
 
 ```ABAP
 METHOD do_something.
@@ -3111,17 +3607,18 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-- `FIXME` 指向内部事件正在形成的过小或过大的错误。
-- `TODO` 是您要在不久之后编写代码的地方。
-- `XXX` 标记出有效但还可以进一步优化的代码。
+- `FIXME` points to errors that are too small or too much in-the-making for internal incidents.
+- `TODO`s are places where you want to complete something in the near(!) future.
+- `XXX` marks code that works but could be better.
 
-输入这类注释时，请添加昵称、姓名缩写或用户，这样可方便共同开发者与您联系并可以在不清楚注释的意图时向您询问问题。
+When you enter such a comment, add your nick, initials, or user to enable your co-developers to contact you
+and ask questions if the comment is unclear.
 
-### 勿添加方法签名和注释结尾
+### Don't add method signature and end-of comments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#勿添加方法签名和注释结尾)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#dont-add-method-signature-and-end-of-comments)
 
-方法签名注释对任何人都没有帮助。
+Method signature comments don't help anybody.
 
 ```ABAP
 " anti-pattern
@@ -3135,11 +3632,20 @@ ENDMETHOD.
 * +--------------------------------------------------------------------------------------</SIGNATURE>
 ```
 
-几十年前，当在检查代码或处理数十页的打印输出内容时，如果看不到方法签名，这些注释可能会对您大有帮助。但现在，所有 ABAP IDE（SE24、SE80、ADT）都可以轻松显示方法签名，因此这些注释只是干扰而已。
+Decades ago, when you couldn't see the method signature when inspecting its code,
+or working with printouts that had dozens of pages, these comments may have made sense.
+But all modern ABAP IDEs (SE24, SE80, ADT) show the method signature easily
+such that these comments have become nothing but noise.
 
-> 在基于表单的编辑器 SE24/SE80 中，按_签名_按钮。在 ABAP 开发工具中，选中方法名称然后按 F2，或将 _ABAP 元素信息_视图添加到您的透视图中。
+> In the form-based editor of SE24/SE80, press button _Signature_.
+> In the ABAP Development Tools, mark the method name and press F2
+> or add the view _ABAP Element Info_ to your perspective.
 
-同样，注释结尾也是多余的。几十年前，当程序和函数以及内部嵌套的 IF 长度达到数百行代码时，这些注释可能很有用。但如今的编码风格发生了变化，方法非常简短，可以轻松看到 `ENDIF` 或 `ENDMETHOD` 属于哪个开头语句：
+Similarly, end-of comments are superfluous.
+These comments may have been helpful decades ago,
+when programs and functions and the nested IFs inside were hundreds of lines of code long.
+But our modern coding style produces methods short enough to readily see
+what opening statement an `ENDIF` or `ENDMETHOD` belongs to:
 
 ```ABAP
 " anti-pattern
@@ -3150,9 +3656,9 @@ METHOD get_kpi_calc.
 ENDMETHOD.   " get_kpi_calc
 ```
 
-### 勿复制消息文本作为注释
+### Don't duplicate message texts as comments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#勿复制消息文本作为注释)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#dont-duplicate-message-texts-as-comments)
 
 ```ABAP
 " anti-pattern
@@ -3160,11 +3666,17 @@ ENDMETHOD.   " get_kpi_calc
 MESSAGE e003 INTO dummy.
 ```
 
-消息独立于您的代码而变化，没有人会记得调整注释，这样注释将很快过时甚至变得有误导性，却没有引起任何人注意。
+Messages change independently from your code,
+and nobody will remember adjusting the comment,
+such that it will outdate and even become misleading quickly
+and without anybody noticing.
 
-在现代 IDE 中，您可以轻松查看消息背后的文本，例如在 ABAP 开发工具中，选中消息标识并按 Shift+F2。
+The modern IDEs give you easy ways to see the text behind a message,
+for example in the ABAP Development Tools,
+mark the message ID and press Shift+F2.
 
-如果您希望消息更准确，请考虑将消息提取到其自身的方法。
+If you want it more explicit,
+consider extracting the message to a method of its own.
 
 ```ABAP
 METHOD create_alert_not_found_message.
@@ -3172,21 +3684,29 @@ METHOD create_alert_not_found_message.
 ENDMETHOD.
 ```
 
-### ABAP 文档仅适用于公共 API
+### ABAP Doc only for public APIs
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#abap-文档仅适用于公共-api)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#abap-doc-only-for-public-apis)
 
-编写 ABAP 文档来记录公共 API，这意味着这些 API 可供其他团队或应用程序的开发人员使用。不要为内部内容编写 ABAP 文档。
+Write ABAP Doc to document public APIs,
+meaning APIs that are intended for developers
+in other teams or applications.
+Don't write ABAP Doc for internal stuff.
 
-ABAP 文档与所有注释一样都有相同的弱点，也就是说，它很快会过时，然后会变得有误导性。因此，您应该只在有意义的情况下使用，而不要为一切内容强制编写 ABAP 文档。
+ABAP Doc suffers from the same weaknesses as all comments,
+that is, it outdates quickly and then becomes misleading.
+As a consequence, you should employ it only where it makes sense,
+not enforce writing ABAP Doc for each and everything.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 4: Good Comments: Javadocs in Public APIs_ 和 _Chapter 4: Bad Comments: Javadocs in Nonpublic Code_。
+> Read more in _Chapter 4: Good Comments: Javadocs in Public APIs_ and _Chapter 4: Bad Comments:
+> Javadocs in Nonpublic Code_ of [Robert C. Martin's _Clean Code_].
 
-### 编译指示优于伪注释
+### Prefer pragmas to pseudo comments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [注释](#注释) > [本节](#编译指示优于伪注释)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Comments](#comments) > [This section](#prefer-pragmas-to-pseudo-comments)
 
-优先使用编译指示而不是伪注释来抑制 ATC 识别的无关警告和错误。伪注释大部分已过时，并已替换为编译指示。
+Prefer pragmas to pseudo comments to suppress irrelevant warnings and errors identified by the ATC. Pseudo comments 
+have mostly become obsolete and have been replaced by pragmas.
 
 ```ABAP
 " pattern
@@ -3196,33 +3716,42 @@ MESSAGE e001(ad) INTO DATA(message) ##NEEDED.
 MESSAGE e001(ad) INTO DATA(message). "#EC NEEDED
 ```
 
-使用 `ABAP_SLIN_PRAGMAS` 程序或 `SLIN_DESC` 表查找过时伪注释与已替换这些伪注释的编译指示之间的映射。
+Use program `ABAP_SLIN_PRAGMAS` or table `SLIN_DESC` to find the mapping between obsolete pseudo comments and the pragmas that 
+have replaced them.
 
-## 格式化
+## Formatting
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#格式化)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#formatting)
 
-下面的建议[为阅读而不是书写进行优化](#为阅读而不是书写进行优化)。由于 ABAP 的格式优化器没有涵盖它们，其中的部分建议会产生额外的人工工作，以在名称长度等发生变化时重新格式化语句；如果要避免这种情况，请考虑放弃这些规则，例如[对齐同一对象而非不同对象的赋值](#对齐同一对象而非不同对象的赋值)。
+The suggestions below are [optimized for reading, not for writing](#optimize-for-reading-not-for-writing).
+As ABAP's Pretty Printer doesn't cover them, some of them produce additional manual work to reformat statements
+when name lengths etc. change; if you want to avoid this, consider dropping rules like
+[Align assignments to the same object, but not to different ones](#align-assignments-to-the-same-object-but-not-to-different-ones).
 
-### 保持一致
+### Be consistent
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#保持一致)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#be-consistent)
 
-以相同的方式格式化项目的所有代码。让所有团队成员使用相同的格式化风格。
+Format all code of a project in the same way.
+Let all team members use the same formatting style.
 
-如果要编辑外来代码，请遵循该项目的格式化风格，而不要坚持自己的个人风格。
+If you edit foreign code, adhere to that project's formatting style
+instead of insisting on your personal style.
 
-如果要随时间更改格式化规则，请使用[重构最佳实践](#旧代码重构之法)随时间更新代码。
+If you change your formatting rules over time,
+use [refactoring best practices](#how-to-refactor-legacy-code)
+to update your code over time.
 
-### 为阅读而不是书写进行优化
+### Optimize for reading, not for writing
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#为阅读而不是书写进行优化)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#optimize-for-reading-not-for-writing)
 
-开发人员花费大量时间_阅读_代码。实际上，一天中_编写_代码所占的比例要小得多。
+Developers spend most time _reading_ code.
+Actually _writing_ code takes up a way smaller portion of the day.
 
-因此，应针对读取和调试（而非编写）来优化代码格式。
+As a consequence, you should optimize your code formatting for reading and debugging, not for writing.
 
-例如，应该优先采用
+For example, you should prefer
 
 ```ABAP
 DATA:
@@ -3231,7 +3760,7 @@ DATA:
   e TYPE f.
 ```
 
-而不是
+to hacks such as
 
 ```ABAP
 " anti-pattern
@@ -3241,73 +3770,88 @@ DATA:
   ,e TYPE f.
 ```
 
-### 激活前使用格式优化器
+### Use the Pretty Printer before activating
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#激活前使用格式优化器)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#use-the-pretty-printer-before-activating)
 
-在激活对象前应用格式优化器——SE80、SE24 和 ADT 中的 Shift+F1。
+Apply the pretty printer - Shift+F1 in SE80, SE24, and ADT - before activating an object.
 
-如果修改一个大型未格式化旧代码库，可能需要仅对选定行应用格式优化器，以避免产生大量的变更项和传输依赖项。请考虑在单独的传输请求或注释中整齐打印完整的开发对象。
+If you modify a larger unformatted legacy code base,
+you may want to apply the Pretty Printer only to selected lines
+to avoid huge change lists and transport dependencies.
+Consider pretty-printing the complete development object
+in a separate Transport Request or Note.
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 5: Formatting: Team Rules_。
+> Read more in _Chapter 5: Formatting: Team Rules_ of [Robert C. Martin's _Clean Code_].
 
-### 使用格式优化器团队设置
+### Use your Pretty Printer team settings
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#使用格式优化器团队设置)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#use-your-pretty-printer-team-settings)
 
-始终使用团队设置。在_菜单_ > _实用程序_ > _设置 ..._ > _ABAP 编辑器_ > _格式优化器_下进行指定。
+Always use your team settings.
+Specify them under
+_Menu_ > _Utilities_ > _Settings ..._ > _ABAP Editor_ > _Pretty Printer_.
 
-按照团队的协商设置_缩进_和_转换大写/小写_ > _大写关键字_。
+Set _Indent_ and _Convert Uppercase/Lowercase_ > _Uppercase Keyword_
+as agreed in your team.
 
-> [大写字母与小写字母](sub-sections/UpperVsLowerCase.md)解释了为什么我们没有为关键字的大小写提供明确的指导。
-更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 5: Formatting: Team Rules_。
+> [Upper vs. Lower Case](sub-sections/UpperVsLowerCase.md) explains
+> why we do not give clear guidance for the type case of keywords.
+>
+> Read more in _Chapter 5: Formatting: Team Rules_ of [Robert C. Martin's _Clean Code_].
 
-### 每行只有一条语句
+### No more than one statement per line
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#每行只有一条语句)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#no-more-than-one-statement-per-line)
 
 ```ABAP
 DATA do_this TYPE i.
 do_this = input + 3.
 ```
 
-即使某些情况可能使您误以为这是可读的：
+Even if some occurrences may trick you into the misconception that this was readable:
 
 ```ABAP
 " anti-pattern
 DATA do_this TYPE i. do_this = input + 3.
 ```
 
-### 恪守合理的行长度
+### Stick to a reasonable line length
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#恪守合理的行长度)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#stick-to-a-reasonable-line-length)
 
-遵守最多 120 个字符的行长度。
+Adhere to a maximum line length of 120 characters.
 
-如果行距不是很宽，人眼可以更舒适地阅读文字——请在UI 设计师或眼动研究人员建议下做出您的选择。在调试或比较相邻的两行源代码时，如果代码行更窄一些，您会心生感激之情的。
+The human eye reads text more comfortably if the lines are not too wide -
+ask a UI designer or eye movement researcher of your choice.
+You will also appreciate the narrower code when debugging or comparing two sources next to each other.
 
-老的终端设备的 80 个甚至 72 个字符的限制太过严格了。虽然通常建议使用 100 个字符（这是一个可行的选择），但对于 ABAP 来说，最好使用 120 个字符，这可能是因为这种语言一般较为冗长。
+The 80 or even 72 characters limit originating in the old terminal devices is a little too restrictive.
+While 100 characters are often recommended and a viable choice, 120 characters seem to work a little better for ABAP,
+maybe because of the general verbosity of the language.
 
-> 提醒一下，您可以在 ADT 中将打印边距配置为 120 个字符，然后在代码视图中将其显示为垂直线。在_菜单_ > _窗口_ > _首选项_ > _常规_ > _编辑器_ > _文本编辑器_下进行配置。
+> As a reminder you can configure in ADT the print margin to 120 characters,
+> which then is visualized in the code view as a vertical line.
+> Configure it under _Menu_ > _Window_ > _Preferences_ > _General_ > _Editors_ > _Text Editors_.
 
-### 紧缩代码
+### Condense your code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#紧缩代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#condense-your-code)
 
 ```ABAP
 DATA(result) = calculate( items ).
 ```
 
-而不是添加不必要的空格
+instead of adding unneeded blanks
 
 ```ABAP
 " anti-pattern
 DATA(result)        =      calculate(    items =   items )   .
 ```
 
-### 添加单一空行来分隔内容，而不要添加多行
+### Add a single blank line to separate things, but not more
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#添加单一空行来分隔内容而不要添加多行)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#add-a-single-blank-line-to-separate-things-but-not-more)
 
 ```ABAP
 DATA(result) = do_something( ).
@@ -3315,7 +3859,8 @@ DATA(result) = do_something( ).
 DATA(else) = calculate_this( result ).
 ```
 
-强调这两条语句做的是不同的事情。但没必要
+to highlight that the two statements do different things. But there is no reason for
+
 ```ABAP
 " anti-pattern
 DATA(result) = do_something( ).
@@ -3325,11 +3870,11 @@ DATA(result) = do_something( ).
 DATA(else) = calculate_this( result ).
 ```
 
-添加分隔空行可能表明您的方法没有在[做一件事](#做且仅做一件事把它做好)。
+The urge to add separating blank lines may be an indicator that your method doesn't [do one thing](#do-one-thing-do-it-well-do-it-only).
 
-### 勿因分隔空行产生困扰
+### Don't obsess with separating blank lines
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#勿因分隔空行产生困扰)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#dont-obsess-with-separating-blank-lines)
 
 ```ABAP
 METHOD do_something.
@@ -3338,7 +3883,7 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-没有理由养成用空行将代码分开的坏习惯 
+No reason for the bad habit to tear your code apart with blank lines
 
 ```ABAP
 " anti-pattern
@@ -3351,7 +3896,7 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-空行实际上仅在您有跨越多行的语句时才有意义
+Blank lines actually only make sense if you have statements that span multiple lines
 
 ```ABAP
 METHOD do_something.
@@ -3367,36 +3912,36 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-### 对齐同一对象而非不同对象的赋值
+### Align assignments to the same object, but not to different ones
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#对齐同一对象而非不同对象的赋值)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#align-assignments-to-the-same-object-but-not-to-different-ones)
 
-为了强调这些事物在某种程度上是属于一起的
+To highlight that these things somehow belong together
 
 ```ABAP
 structure-type = 'A'.
 structure-id   = '4711'.
 ```
 
-或者这样更好
+or even better
 
 ```ABAP
 structure = VALUE #( type = 'A'
                      id   = '4711' ).
 ```
 
-而对于那些彼此无关的事物，仍保留参差不齐的状态：
+But leave things ragged that have nothing to do with each other:
 
 ```ABAP
 customizing_reader = fra_cust_obj_model_reader=>s_get_instance( ).
 hdb_access = fra_hdbr_access=>s_get_instance( ).
 ```
 
-> 更多信息参阅 [Robert C. Martin 所著的 _Clean Code_] 中的 _Chapter 5: Formatting: Horizontal Alignment_。
+> Read more in _Chapter 5: Formatting: Horizontal Alignment_ of [Robert C. Martin's _Clean Code_].
 
-### 在行尾关闭括号
+### Close brackets at line end
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#在行尾关闭括号)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#close-brackets-at-line-end)
 
 ```ABAP
 modify->update( node           = if_fra_alert_c=>node-item
@@ -3405,7 +3950,7 @@ modify->update( node           = if_fra_alert_c=>node-item
                 changed_fields = changed_fields ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -3416,16 +3961,16 @@ modify->update( node           = if_fra_alert_c=>node-item
 ).
 ```
 
-### 保持单参数调用于一行
+### Keep single parameter calls on one line
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#保持单参数调用于一行)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#keep-single-parameter-calls-on-one-line)
 
 ```ABAP
 DATA(unique_list) = remove_duplicates( list ).
 remove_duplicates( CHANGING list = list ).
 ```
 
-而不是毫无必要地加长
+instead of the needlessly longer
 
 ```ABAP
 " anti-pattern
@@ -3436,34 +3981,34 @@ DATA(unique_list) = remove_duplicates(
                            list = list ).
 ```
 
-### 保持参数在调用后面
+### Keep parameters behind the call
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#保持参数在调用后面)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#keep-parameters-behind-the-call)
 
 ```ABAP
 DATA(sum) = add_two_numbers( value_1 = 5
                              value_2 = 6 ).
 ```
 
-如果这造成行很长，可以换行，将参数转到下一行：
+When this makes the lines very long, you can break the parameters into the next line:
 
 ```ABAP
 DATA(sum) = add_two_numbers(
-                   value_1 = round_up( input DIV 7 ) * 42 + round_down( 19 * step_size )
-                   value_2 = VALUE #( ( `Calculation failed with a very weird result` ) ) ).
+                value_1 = round_up( input DIV 7 ) * 42 + round_down( 19 * step_size )
+                value_2 = VALUE #( ( `Calculation failed with a very weird result` ) ) ).
 ```
 
-### 如果换行，则在调用下缩进参数
+### If you break, indent parameters under the call
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#如果换行则在调用下缩进参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#if-you-break-indent-parameters-under-the-call)
 
 ```ABAP
 DATA(sum) = add_two_numbers(
-                   value_1 = 5
-                   value_2 = 6 ).
+                value_1 = 5
+                value_2 = 6 ).
 ```
 
-在其他地方对齐参数将导致很难发现它们所属的对象：
+Aligning the parameters elsewhere makes it hard to spot what they belong to:
 
 ```ABAP
 DATA(sum) = add_two_numbers(
@@ -3471,27 +4016,28 @@ DATA(sum) = add_two_numbers(
     value_2 = 6 ).
 ```
 
-但是，如果要避免因名称长度更改而破坏格式，这就是最佳模式了。
+However, this is the best pattern if you want to avoid the formatting to be broken by a name length change.
 
-### 将多个参数换行
+### Line-break multiple parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#将多个参数换行)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#line-break-multiple-parameters)
 
 ```ABAP
 DATA(sum) = add_two_numbers( value_1 = 5
                              value_2 = 6 ).
 ```
 
-是的，这浪费了空间。但是如果不这样，就很难确定一个参数在哪里结束而下一个在哪里开始：
+Yes, this wastes space.
+However, otherwise, it's hard to spot where one parameter ends and the next starts:
 
 ```ABAP
 " anti-pattern
 DATA(sum) = add_two_numbers( value_1 = 5 value_2 = 6 ).
 ```
 
-### 对齐参数
+### Align parameters
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#对齐参数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#align-parameters)
 
 ```ABAP
 modify->update( node           = if_fra_alert_c=>node-item
@@ -3500,7 +4046,7 @@ modify->update( node           = if_fra_alert_c=>node-item
                 changed_fields = changed_fields ).
 ```
 
-边距参差不齐，使得很难看到参数的结束位置以及参数值的开始位置：
+Ragged margins make it hard to see where the parameter ends and its value begins:
 
 ```ABAP
 " anti-pattern
@@ -3510,11 +4056,11 @@ modify->update( node = if_fra_alert_c=>node-item
                 changed_fields = changed_fields ).
 ```
 
->如果要避免因名称长度更改而破坏格式，这就是另一种最佳模式了。
+> This is on the other side the best pattern if you want to avoid the formatting to be broken by a name length change.
 
-### 如果调用行过长则将其换行
+### Break the call to a new line if the line gets too long
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#如果调用行过长则将其换行)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#break-the-call-to-a-new-line-if-the-line-gets-too-long)
 
 ```ABAP
 DATA(some_super_long_param_name) =
@@ -3523,11 +4069,11 @@ DATA(some_super_long_param_name) =
       value_2 = 6 ).
 ```
 
-### 缩进并卡到制表位
+### Indent and snap to tab
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#缩进并卡到制表位)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#indent-and-snap-to-tab)
 
-将参数关键字缩进 2 个空格，并将参数缩进 4 个空格：
+Indent parameter keywords by 2 spaces and parameters by 4 spaces:
 
 ```ABAP
 DATA(sum) = add_two_numbers(
@@ -3538,7 +4084,7 @@ DATA(sum) = add_two_numbers(
                 errors  = errors ).
 ```
 
-如果没有关键字，则将参数缩进 4 个空格。
+If you have no keywords, indent the parameters by 4 spaces.
 
 ```ABAP
 DATA(sum) = add_two_numbers(
@@ -3546,13 +4092,14 @@ DATA(sum) = add_two_numbers(
                 value_2 = 6 ).
 ```
 
-使用 Tab 键缩进。就算多加了一个空格也没有关系。（如果左侧 `DATA(sum) =` 部分的字符数非偶数，则会发生这种情况。）
+Use the Tab key to indent. It's okay if this adds one more space than needed.
+(This happens if the `DATA(sum) =` part at the left has an uneven number of characters.)
 
-### 如同方法调用那样缩进内联声明
+### Indent in-line declarations like method calls
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#如同方法调用那样缩进内联声明)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#indent-in-line-declarations-like-method-calls)
 
-按照与方法调用相同的方式，使用 VALUE 或 NEW 缩进内联声明：
+Indent in-line declarations with VALUE or NEW as if they were method calls:
 
 ```ABAP
 DATA(result) = merge_structures( a = VALUE #( field_1 = 'X'
@@ -3561,16 +4108,18 @@ DATA(result) = merge_structures( a = VALUE #( field_1 = 'X'
                                                                 field_4 = 'D' ) ).
 ```
 
-### 勿对齐类型子句
+### Don't align type clauses
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [格式化](#格式化) > [本节](#勿对齐类型子句)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#dont-align-type-clauses)
 
 ```ABAP
 DATA name TYPE seoclsname.
 DATA reader TYPE REF TO /clean/reader.
 ```
 
-变量及其类型属于同一类，因此从视觉上来说应将其分为一组。将 `TYPE` 子句对齐会使人们的分心，并建议这些变量形成一个垂直组，而它们的类型形成一个垂直组。对齐还会产生不必要的编辑开销，当最长变量名的长度发生变化时，需要调整所有的缩进。
+A variable and its type belong together and should therefore be visually grouped in close proximity.
+Aligning the `TYPE` clauses draws attention away from that and suggests that the variables form one vertical group, and their types another one.
+Alignment also produces needless editing overhead, requiring you to adjust all indentations when the length of the longest variable name changes.
 
 ```ABAP
 " anti-pattern
@@ -3578,85 +4127,139 @@ DATA name   TYPE seoclsname.
 DATA reader TYPE REF TO /clean/reader.
 ```
 
-## 测试
+### Don't chain assignments
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [本节](#测试)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Formatting](#formatting) > [This section](#dont-chain-assignments)
 
-### 原则
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#原则)
-
-#### 编写可测试的代码
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#编写可测试的代码)
-
-编写的所有代码应该允许您以自动方式测试。
-
-如果需要重构您的代码，那就重构。并在开始添加其他功能之前重构。
-
-如果添加到的旧代码结构过于混乱而无法测试，那么至少要对其进行重构到您新添加部分能够测试。
-
-#### 让他人能够进行模拟
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#让他人能够进行模拟)
-
-如果要编写供其他人使用的代码，请让他们能够为自己的代码编写单元测试，例如通过在所有对外交互的位置添加接口，提供有助于促进集成测试的测试替身，或应用依赖倒置使他们能够用测试配置替代生产配置。
-
-#### 可读性规则
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#可读性规则)
-
-让您的测试代码比生产代码更具可读性。您可以通过有效的测试来处理糟糕的生产代码，但是，可能您甚至还未进行测试，就已经把自己弄懵了。
-
-保持您的测试代码保持简单、傻瓜，这样您一年后仍然能够理解它。
-
-遵守标准和模式，使您的同事能够快速了解代码。
-
-#### 勿制作副本或写测试报告
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#勿制作副本或写测试报告)
-
-不要通过制作一个开发对象的 `$TMP` 副本并反复研究来处理开发项。其他人不会注意到这些对象，因此不会知道您的工作状态。您可能会在一开始就浪费大量的时间来制作工作副本，之后您也可能会忘记删除副本，这些副本对于系统和依赖项来说是没用的垃圾。（不相信？立刻看看开发系统并检查一下 `$TMP`。）
-
-另外，不要一开始就编写以特定方式调用某些内容的测试报告，并重复此操作以验证您在运行代码时是否一切正常。这是糟糕的手动测试：手动重复测试报告，目视验证一切是否正常。往前迈一步，在单元测试中自动执行此报告，使用自动断言告诉您代码是否仍然正常运行。这样的好处有，，您不需要进行之后必须编写单元测试的工作。其次，您可以节省进行手动重复所用的大量时间，另外还可以避免感到无聊和疲劳。
-
-#### 测试公共项而非私有内部项
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#测试公共项而非私有内部项)
-
-类的公共项部分，尤其是它们实现的接口，相当稳定并且不太可能发生更改。让您的单元测试仅验证公共项，使其稳定可靠，并最大程度地减少重构类时所需的工作量。相比之下，受保护的和私有的内部项可能会通过重构而快速变化，这样，每次重构都会不必要地中断您的测试。
-
-测试私有方法或受保护方法的迫切需求可能是几个早期设计缺陷的警告信号。问问您自己以下问题：
-
-- 您是否意外地在您的类中埋没了一个概念，这个概念本该公开到其自己的类并使用其专用测试套件？
-
-- 您是否忘记将域逻辑与粘合代码分开？例如，直接在类中实施作为操作、确定或验证插入到 BOPF 的域逻辑，或者由 SAP Gateway 作为 `*_DPC_EXT` 数据提供者生成的域逻辑，可能不是上策。
-
-- 接口是不是太过复杂、请求过多无关的数据或者无法轻松进行模拟？
-
-#### 勿困扰于覆盖范围
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [原则](#原则) > [本节](#勿困扰于覆盖范围)
-
-代码覆盖范围可以帮助您找到忘记测试的代码，而不是满足某些随机的 KPI：
-
-不要仅为了达到覆盖范围而在包含或不含虚拟断言的情况下编写测试。最好保留未经测试的内容，以表明您不能安全地进行重构。您可以拥有小于 100％ 的覆盖范围，并且仍然可以进行完美的测试。在某些情况下，例如在构造函数中使用 IF 插入测试替身时，可能无法达到 100％。好的测试往往会针对不同的分支和条件多次覆盖同一条语句。实际上，这些测试的假想覆盖率大于 100％。
-
-### 测试类
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#测试类)
-
-#### 按用途调用局部测试类
-
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试类](#测试类) > [本节](#按用途调用局部测试类)
-
-```ABAP
-CLASS ltc_unit_tests DEFINITION FOR TESTING ... .
-CLASS ltc_integration_tests DEFINITION FOR TESTING ... .
-CLASS ltc_unit_tests_with_mocks DEFINITION FOR TESTING ... .
+```abap
+var2 = var3.
+var1 = var3.
 ```
 
-良好的名称可以揭示测试的级别以及公有设置部分。
+```abap
+var1 = xsdbool( var2 = var3 ).
+```
+
+Chained assignments usually confuse the reader. Besides, the inline declaration doesn't work in any position of a multiple assignment.
+
+```abap
+" anti-pattern
+var1 = var2 = var3.
+```
+
+## Testing
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [This section](#testing)
+
+### Principles
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#principles)
+
+#### Write testable code
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#write-testable-code)
+
+Write all code in a way that allows you to test it in an automatic fashion.
+
+If this requires refactoring your code, do it.
+Do that first, before you start adding other features.
+
+If you add to legacy code that is too badly structured to be tested,
+refactor it at least to the extent that you can test your additions.
+
+#### Enable others to mock you
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#enable-others-to-mock-you)
+
+If you write code to be consumed by others, enable them to write unit tests for their own code,
+for example by adding interfaces in all outward-facing places,
+providing helpful test doubles that facilitate integration tests,
+or applying dependency inversion to enable them to substitute the productive configuration with a test config.
+
+#### Readability rules
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#readability-rules)
+
+Make your test code even more readable than your productive code.
+You can tackle bad productive code with good tests, but if you don't even get the tests, you're lost.
+
+Keep your test code so simple and stupid that you will still understand it in a year from now.
+
+Stick to standards and patterns, to enable your co-workers to quickly get into the code.
+
+#### Don't make copies or write test reports
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#dont-make-copies-or-write-test-reports)
+
+Don't start working on a backlog item by making a `$TMP` copy of a development object and playing around with it.
+Others won't notice these objects and therefore won't know the status of your work.
+You will probably waste a lot of time by making the working copy in the first place.
+You will also forget to delete the copy afterwards, spamming your system and dependencies.
+(Don't believe this? Go to your development system and check your `$TMP` right now.)
+
+Also, don't start by writing a test report that calls something in a specific way,
+and repeat that to verify that things are still working when you're working on it.
+This is poor man's testing: repeating a test report by hand and verifying by eye whether everything is still fine.
+Take the next step and automate this report in a unit test,
+with an automatic assertion that tells you whether the code is still okay.
+First, you will spare yourself the effort of having to write the unit tests afterwards.
+Second, you will save a lot of time for the manual repetitions, plus avoid getting bored and tired over it.
+
+#### Test publics, not private internals
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#test-publics-not-private-internals)
+
+Public parts of classes, especially the interfaces they implement, are rather stable and unlikely to change.
+Let your unit tests validate only the publics to make them robust
+and minimize the effort you have to spend when you refactor the class.
+Protected and private internals, in contrast, may change very quickly through refactoring,
+such that each refactoring would needlessly break your tests.
+
+An urgent need to test private or protected methods may be an early warning sign for several kinds of design flaws.
+Ask yourself:
+
+- Did you accidentally bury a concept in your class that wants to come out into its own class,
+with its own dedicated suite of tests?
+
+- Did you forget to separate the domain logic from the glue code?
+For example, implementing the domain logic directly in the class that is plugged into BOPF as an action,
+determination, or validation, or that was generated by SAP Gateway as a `*_DPC_EXT` data provider, may not the best idea.
+
+- Are your interfaces too complicated and request too much data that is irrelevant or that cannot be mocked easily?
+
+#### Don't obsess about coverage
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Principles](#principles) > [This section](#dont-obsess-about-coverage)
+
+Code coverage is there to help you find code you forgot to test, not to meet some random KPI:
+
+Don't make up tests without or with dummy asserts just to reach the coverage.
+Better leave things untested to make transparent that you cannot safely refactor them.
+You can have < 100% coverage and still have perfect tests.
+There are cases - such as IFs in the constructor to insert test doubles -
+that may make it unpractical to reach 100%.
+Good tests tend to cover the same statement multiple times, for different branches and conditions.
+They will in fact have imaginary > 100% coverage.
+
+### Test Classes
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#test-classes)
+
+#### Call local test classes by their purpose
+
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Classes](#test-classes) > [This section](#call-local-test-classes-by-their-purpose)
+
+Name local test classes either by the "when" part of the story
+
+```ABAP
+CLASS ltc_<public method name> DEFINITION FOR TESTING ... ."
+```
+
+or the "given" part of the story
+
+```ABAP
+CLASS ltc_<common setup semantics> DEFINITION FOR TESTING ... .
+```
 
 ```ABAP
 " anti-patterns
@@ -3664,15 +4267,27 @@ CLASS ltc_fra_online_detection_api DEFINITION FOR TESTING ... . " We know that's
 CLASS ltc_test DEFINITION FOR TESTING ....                      " Of course it's a test, what else should it be?
 ```
 
-#### 将测试放在局部类
+#### Put tests in local classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试类](#测试类) > [本节](#将测试放在局部类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Classes](#test-classes) > [This section](#put-tests-in-local-classes)
 
-将单元测试放入被测类的局部测试包含文件中。这样可以确保人们在重构该类时能够找到这些测试，并允许他们通过按一次按键运行所有相关的测试，如[如何执行测试类](#如何执行测试类)中所述。
+Put unit tests into the local test include of the class under test.
+This ensures that people find these tests when refactoring the class
+and allows them to run all associated tests with a single key press,
+as described in [How to execute test classes](#how-to-execute-test-classes).
 
-将组件测试、集成测试和系统测试放入包含单独全局类的局部测试中。它们与被测的单个类没有直接关系，因此不应随意将它们放在某个相关类中，而是应放在一个单独的类中。将此全局测试类标记为 `FOR TESTING` 和 `ABSTRACT`，以避免在生产代码中意外地引用该类。将测试放到其他类中存在这样的危险，即人们在重构所涉及的类时忽略并忘记运行这些测试。
+Put component-, integration- and system tests into the local test include of a separate global class.
+They do not directly relate to a single class under test, therefore they should not arbitrarily be
+placed in one of the involved classes, but in a separate one.  
+Mark this global test class as `FOR TESTING` and `ABSTRACT`
+to avoid that it is accidentally referenced in production code.  
+Putting tests into other classes has the danger that people overlook them
+and forget to run them when refactoring the involved classes.
 
-因此，使用*测试关系*来记录已测试的对象是有好处的。在下面的例子中，可以在类 `recruting` 或 `candidate` 中或通过快捷键 `Shift-Crtl-F12` (Windows) 或 `Cmd-Shift-F12` (macOS) 执行测试类 `hiring_test`。
+Therefore it is beneficial to use *test relations* to document which objects
+are tested by the test.  
+With the example below the test class `hiring_test`
+could be executed while being in the class `recruting` or `candidate` via the shrotcut `Shift-Crtl-F12` (Windows) or `Cmd-Shift-F12` (macOS).
 
 ```abap
 "! @testing recruting
@@ -3684,18 +4299,17 @@ class hiring_test definition
 endclass.
 ```
 
-#### 将帮助方法放在帮助类
+#### Put help methods in help classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试类](#测试类) > [本节](#将帮助方法放在帮助类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Classes](#test-classes) > [This section](#put-help-methods-in-help-classes)
 
-将若干测试类使用的帮助方法放在帮助类中。通过继承（关系）或委托（具有关系）使帮助方法可用。
+Put help methods used by several test classes in a help class. Make the help methods available through 
+inheritance (is-a relationship) or delegation (has-a relationship).
 
 ```abap
 " inheritance example
 
-CLASS lth_unit_tests DEFINITION ABSTRACT FOR TESTING
-  DURATION SHORT
-  RISK LEVEL HARMLESS.
+CLASS lth_unit_tests DEFINITION ABSTRACT.
 
   PROTECTED SECTION.
     CLASS-METHODS assert_activity_entity
@@ -3720,36 +4334,38 @@ CLASS ltc_unit_tests DEFINITION INHERITING FROM lth_unit_tests FINAL FOR TESTING
 ENDCLASS.
 ```
 
-#### 如何执行测试类
+#### How to execute test classes
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试类](#测试类) > [本节](#如何执行测试类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Classes](#test-classes) > [This section](#how-to-execute-test-classes)
 
-在 ABAP 开发工具中，按 Ctrl+Shift+F10 运行某个类中的所有测试。按 Ctrl+Shift+F11 以包括覆盖范围测量。按 Ctrl+Shift+F12 还可运行作为测试关系维护的其他类中的测试。
+In the ABAP Development Tools, press Ctrl+Shift+F10 to run all tests in a class.
+Press Ctrl+Shift+F11 to include coverage measurements.
+Press Ctrl+Shift+F12 to also run tests in other classes that are maintained as test relations.
 
-> 在 macOS 中，使用 `Cmd` 而不是 `Ctrl`。
+> On macOS, use `Cmd` instead of `Ctrl`.
 
-### 被测代码
+### Code Under Test
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#被测代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#code-under-test)
 
-#### 赋予被测代码有意义的名称，或使用缺省名称 CUT
+#### Name the code under test meaningfully, or default to CUT
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [被测代码](#被测代码) > [本节](#赋予被测代码有意义的名称或使用缺省名称-cut)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Code Under Test](#code-under-test) > [This section](#name-the-code-under-test-meaningfully-or-default-to-cut)
 
-为被测代码的变量提供一个有意义的名称：
+Give the variable that represents the code under test a meaningful name:
 
 ```ABAP
 DATA blog_post TYPE REF TO ...
 ```
 
-不要只使用类名称的所有无价值的命名空间和前缀来重复类名称：
+Don't just repeat the class name with all its non-valuable namespaces and prefixes:
 
 ```ABAP
 " anti-pattern
 DATA clean_fra_blog_post TYPE REF TO ...
 ```
 
-如果您具有不同的测试设置，且对描述对象的变化状态可能会有所帮助：
+If you have different test setups, it can be helpful to describe the object's varying state:
 
 ```ABAP
 DATA empty_blog_post TYPE REF TO ...
@@ -3757,36 +4373,41 @@ DATA simple_blog_post TYPE REF TO ...
 DATA very_long_blog_post TYPE REF TO ...
 ```
 
-如果想不到起什么名称有意义，请使用缺省名称 `cut`。该缩写代表“code under test”。
+If you have problems finding a meaningful name, resort to `cut` as a default.
+The abbreviation stands for "code under test".
 
 ```ABAP
 DATA cut TYPE REF TO ...
 ```
 
-特别是在不整洁且令人困惑的测试中，调用变量 `cut` 可以暂时帮助读者查看实际测试的内容。然而，从长远来看，整理测试才是真正有效的方法。
+Especially in unclean and confusing tests, calling the variable `cut`
+can temporarily help the reader see what's actually tested.
+However, tidying up the tests is the actual way to go for the long run.
 
-#### 测试接口而非类
+#### Test against interfaces, not implementations
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [被测代码](#被测代码) > [本节](#测试接口而非类)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Code Under Test](#code-under-test) > [This section](#test-against-interfaces-not-implementations)
 
-[_测试公共项而非私有内部项_](#测试公共项而非私有内部项)的实际结果是，使用_接口_输入您的被测代码
+A practical consequence of the [_Test publics, not private internals_](#test-publics-not-private-internals),
+type your code under test with an _interface_
 
 ```ABAP
 DATA code_under_test TYPE REF TO some_interface.
 ```
 
-而不是_类_
+rather than a _class_
 
 ```ABAP
 " anti-pattern
 DATA code_under_test TYPE REF TO some_class.
 ```
 
-#### 将被测代码的调用提取到自身的方法
+#### Extract the call to the code under test to its own method
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [被测代码](#被测代码) > [本节](#将被测代码的调用提取到自身的方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Code Under Test](#code-under-test) > [This section](#extract-the-call-to-the-code-under-test-to-its-own-method)
 
-如果要测试的方法需要大量参数或准备好的数据，有必要将对它的调用提取到它自己的帮助方法中，该方法预设了不那么重要的参数：
+If the method to be tested requires a lot of parameters or prepared data,
+it can help to extract the call to it to a helper method of its own that defaults the uninteresting parameters:
 
 ```ABAP
 METHODS map_xml_to_itab
@@ -3804,7 +4425,7 @@ ENDMETHOD.
 DATA(itab) = map_xml_to_itab( '<xml></xml>' ).
 ```
 
-直接调用原始方法会让您的测试陷入很多无意义的细枝末节：
+Calling the original method directly can swamp your test with a lot of meaningless details:
 
 ```ABAP
 " anti-pattern
@@ -3813,15 +4434,15 @@ DATA(itab) = cut->map_xml_to_itab( xml_string = '<xml></xml>'
                                    format     = VALUE #( 'more meaningless stuff' ) ).
 ```
 
-### 注入
+### Injection
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#注入)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#injection)
 
-#### 使用依赖倒置注入测试替身
+#### Use dependency inversion to inject test doubles
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#使用依赖倒置注入测试替身)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#use-dependency-inversion-to-inject-test-doubles)
 
-依赖倒置意味着您将所有依赖项传递给构造函数：
+Dependency inversion means that you hand over all dependencies to the constructor:
 
 ```ABAP
 METHODS constructor
@@ -3833,7 +4454,8 @@ METHOD constructor.
 ENDMETHOD.
 ```
 
-不要使用 setter 注入，这样做会以非预期方式使用生产代码：
+Don't use setter injection.
+It enables using the productive code in ways that are not intended:
 
 ```ABAP
 " anti-pattern
@@ -3847,7 +4469,10 @@ METHOD do_something.
 ENDMETHOD.
 ```
 
-不要使用 FRIENDS 注入，这会在替换生产依赖项之前对其进行初始化，产生意想不到的后果。当您重命名内部项后，它将立即中断。它还会绕过构造函数中的初始化。
+Don't use FRIENDS injection.
+It will initialize productive dependencies before they are replaced, with probably unexpected consequences.
+It will break as soon as you rename the internals.
+It also circumvents initializations in the constructor.
 
 ```ABAP
 " anti-pattern
@@ -3862,9 +4487,9 @@ METHOD constructor.
 ENDMETHOD.
 ```
 
-#### 考虑使用 ABAP 测试替身工具
+#### Consider to use the tool ABAP test double
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#考虑使用-abap-测试替身工具)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#consider-to-use-the-tool-abap-test-double)
 
 ```ABAP
 DATA(customizing_reader) = CAST /clean/customizing_reader( cl_abap_testdouble=>create( '/clean/default_custom_reader' ) ).
@@ -3872,7 +4497,7 @@ cl_abap_testdouble=>configure_call( customizing_reader )->returning( sub_claim_c
 customizing_reader->read( 'SOME_ID' ).
 ```
 
-与自定义测试替身相比，更短、更容易理解：
+Shorter and easier to understand than custom test doubles:
 
 ```ABAP
 " anti-pattern
@@ -3894,29 +4519,41 @@ METHOD test_something.
 ENDMETHOD.
 ```
 
-#### 利用测试工具
+#### Exploit the test tools
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#利用测试工具)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#exploit-the-test-tools)
 
-一般来说，整洁的编程风格可以让您使用标准 ABAP 单元测试和测试替身完成大部分工作。但是，有些工具可以让您以优雅的方式处理更棘手的情况:
+In general, a clean programming style
+will let you do much of the work
+with standard ABAP unit tests and test doubles.
+However, there are tools that will allow you
+to tackle trickier cases in elegant ways:
 
-- 使用 `CL_OSQL_REPLACE` 服务测试复杂的 OpenSQL 语句，方法是将这些语句重定向到可在不影响系统其余部分的情况下填充测试数据的测试数据仓。
+- Use the `CL_OSQL_REPLACE` service
+to test complex OpenSQL statements
+by redirecting them to a test data bin
+that can be filled with test data
+without interfering with the rest of the system.
 
-- 使用 CDS 测试框架来测试您的 CDS 视图。
+- Use the CDS test framework to test your CDS views.
 
-#### 使用测试缝隙作为临时解决办法
+#### Use test seams as temporary workaround
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#使用测试缝隙作为临时解决办法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#use-test-seams-as-temporary-workaround)
 
-如果所有其他技术都失败了，或者处于旧代码可能无法正常运行的情况下，应避免使用[测试缝隙](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abendyn_access_data_obj_guidl.htm)来增加可测试性。
+If all other techniques fail, or when in dangerous shallow waters of legacy code,
+refrain to [test seams](https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/index.htm?file=abaptest-seam.htm)
+to make things testable.
 
-尽管第一眼看上去很舒服，但测试接缝是侵入性的，而且容易与私有依赖项纠缠在一起，从长远来看，它们很难保持活性和稳定性。
+Although they look comfortable at first sight, test seams are invasive and tend to get entangled
+in private dependencies, such that they are hard to keep alive and stable in the long run.
 
-因此，我们建议避免仅将测试接缝作为一种临时解决方法以将代码重构为更易于测试的形式。
+We therefore recommend to refrain to test seams only as a temporary workaround
+to allow you refactoring the code into a more testable form.
 
-#### 使用 LOCAL FRIENDS 访问依赖倒置的构造函数
+#### Use LOCAL FRIENDS to access the dependency-inverting constructor
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#使用-local-friends-访问依赖倒置的构造函数)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#use-local-friends-to-access-the-dependency-inverting-constructor)
 
 ```ABAP
 CLASS /clean/unit_tests DEFINITION.
@@ -3937,11 +4574,12 @@ CLASS unit_tests IMPLEMENTATION.
 ENDCLASS.
 ```
 
-#### 勿滥用 LOCAL FRIENDS 侵入被测代码
+#### Don't misuse LOCAL FRIENDS to invade the tested code
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#勿滥用-local-friends-侵入被测代码)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#dont-misuse-local-friends-to-invade-the-tested-code)
 
-访问私有成员和受保护成员以插入模拟数据的单元测试很脆弱：当测试代码的内部结构发生变化时，它们会中断。
+Unit tests that access private and protected members to insert mock data are fragile:
+they break when the internal structure of the tested code changes.
 
 ```ABAP
 " anti-pattern
@@ -3953,20 +4591,23 @@ CLASS unit_tests IMPLEMENTATION.
 ENDCLASS.
 ```
 
-#### 勿更改生产代码来使代码可测试
+#### Don't change the productive code to make the code testable
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#勿更改生产代码来使代码可测试)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#dont-change-the-productive-code-to-make-the-code-testable)
 
 ```ABAP
 " anti-pattern
 IF me->in_test_mode = abap_true.
 ```
 
-#### 勿子类化来模拟方法
+#### Don't sub-class to mock methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#勿子类化来模拟方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#dont-sub-class-to-mock-methods)
 
-不要在单元测试中通过子类化和覆盖方法来模拟方法。尽管这是可行的，但这样的方法很脆弱，在重构代码时测试很容易中断。而且真正的使用者还可能继承您的类，[如果没有明确设计此功能，这可能会令您措手不及](#若非为继承而设计则为-final)。
+Don't sub-class and overwrite methods to mock them in your unit tests.
+Although this works, it is fragile because the tests break easily when refactoring the code.
+It also enables real consumers to inherit your class,
+which [may hit you unprepared when not explicitly designing for it](#final-if-not-designed-for-inheritance).
 
 ```ABAP
 " anti-pattern
@@ -3975,15 +4616,22 @@ CLASS unit_tests DEFINITION INHERITING FROM /dirty/real_class FOR TESTING [...].
     METHODS needs_to_be_mocked REDEFINITION.
 ```
 
-要获取旧被测代码，请[改用测试接缝](#使用测试缝隙作为临时解决办法)。测试接缝同样脆弱，但至少不会改变类的生产行为（如通过删除先前的 `FINAL` 标志或将方法的作用域从 `PRIVATE` 更改为 `PROTECTED` 来启用继承时可能发生的行为），仍不失为一种更为整洁的方式。
+To get legacy code under test,
+[resort to test seams instead](#use-test-seams-as-temporary-workaround).
+They are just as fragile but still the cleaner way because they at least don't change the class's productive behavior,
+as would happen when enabling inheritance by removing a previous `FINAL` flag or by changing method scope from `PRIVATE` to `PROTECTED`.
 
-在编写新代码时，在设计类时应直接考虑此可测试性问题，并找到其他更好的方法。常见的最佳做法包括[求助于其他测试工具](#利用测试工具)并将问题方法提取到本身具有接口的单独类中。
+When writing new code, take this testability issue into account directly when designing the class,
+and find a different, better way.
+Common best practices include [resorting to other test tools](#exploit-the-test-tools)
+and extracting the problem method to a separate class with its own interface.
 
-> [勿更改生产代码来使代码可测试](#勿更改生产代码来使代码可测试)的更具体的变化形式。
+> A more specific variant of
+> [Don't change the productive code to make the code testable](#dont-change-the-productive-code-to-make-the-code-testable).
 
-#### 勿模拟不需要的东西
+#### Don't mock stuff that's not needed
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#勿模拟不需要的东西)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#dont-mock-stuff-thats-not-needed)
 
 ```ABAP
 cut = NEW /clean/class_under_test( db_reader = db_reader
@@ -3991,7 +4639,9 @@ cut = NEW /clean/class_under_test( db_reader = db_reader
                                    writer    = VALUE #( ) ).
 ```
 
-尽可能精确地定义给定条件：不要设置测试不需要的数据，也不要模拟永远不会调用的对象。这些内容会分散读者对真实运行情况的注意力。
+Define your givens as precisely as possible: don't set data that your test doesn't need,
+and don't mock objects that are never called.
+These things distract the reader from what's really going on.
 
 ```ABAP
 " anti-pattern
@@ -4000,19 +4650,23 @@ cut = NEW /dirty/class_under_test( db_reader = db_reader
                                    writer    = writer ).
 ```
 
-在某些情况下，根本不需要模拟某些内容，数据结构和数据容器通常就是这种情况。例如，您的单元测试可以使用 `transient_log` 生产版本正常运行，因为该版本只存储数据而不会产生其他影响。
+There are also cases where it's not necessary to mock something at all -
+this is usually the case with data structures and data containers.
+For example, your unit tests may well work with the productive version of a `transient_log`
+because it only stores data without any side effects.
 
-#### 勿构建测试框架
+#### Don't build test frameworks
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [注入](#注入) > [本节](#勿构建测试框架)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Injection](#injection) > [This section](#dont-build-test-frameworks)
 
-与集成测试不同，单元测试涉及数据输入和数据输出，所有测试数据都是根据需要动态定义的。
+Unit tests - in contrast to integration tests - should be data-in-data-out, with all test data being defined on the fly as needed.
 
 ```ABAP
 cl_abap_testdouble=>configure_call( test_double )->returning( data ).
 ```
 
-不要开始构建用于区分“*测试案例标识*”的框架来决定要提供的数据。生成的代码将会如此冗长而复杂，以至于您无法长期保留这些测试。
+Don't start building frameworks that distinguish "*test case IDs*" to decide what data to provide.
+The resulting code will be so long and tangled that you won't be able to keep these tests alive in the long term.
 
 ```ABAP
 " anti-pattern
@@ -4025,15 +4679,15 @@ CASE me->test_case.
 ENDCASE.
 ```
 
-### 测试方法
+### Test Methods
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#测试方法)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#test-methods)
 
-#### 测试方法名称：反映出设想和预期的情形
+#### Test method names: reflect what's given and expected
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试方法](#测试方法) > [本节](#测试方法名称反映出设想和预期的情形)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Methods](#test-methods) > [This section](#test-method-names-reflect-whats-given-and-expected)
 
-好的名称可以反映出测试的设想内容和预期结果：
+Good names reflect the given and then of the test:
 
 ```ABAP
 METHOD reads_existing_entry.
@@ -4041,7 +4695,7 @@ METHOD throws_on_invalid_key.
 METHOD detects_invalid_input.
 ```
 
-不恰当的名称则反映操作内容，重复无意义的事实或含糊不清：
+Bad names reflect the when, repeat meaningless facts, or are cryptic:
 
 ```ABAP
 " anti-patterns
@@ -4059,23 +4713,34 @@ METHOD parameterized_test.
 METHOD get_attributes_wo_w.
 ```
 
-由于 ABAP 只允许方法名称使用 30 个字符，如果名称过短而无法表达足够的含义，那么添加注释是合理的。在 ABAP 文档中或在测试方法的第一行添加注释都是不错的选择。
+As ABAP allows only 30 characters in method names, it's fair to add an explanatory comment
+if the name is too short to convey enough meaning.
+ABAP Doc or the first line in the test method may be an appropriate choice for the comment.
 
-如果有很多名称过长的测试方法，这可能意味着您应该将单个测试类拆分为多个测试类，并在类名称中的给定部分予以区别。
+Having lots of test methods whose names are too long may be an indicator
+that you should split your single test class into several ones
+and express the differences in the givens in the class's names.
 
-#### 使用 given-when-then
+#### Use given-when-then
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试方法](#测试方法) > [本节](#使用-given-when-then)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Methods](#test-methods) > [This section](#use-given-when-then)
 
-按照 given-when-then 范式组织测试代码：首先，初始化给定部分中的内容 ("given")，其次调用实际测试的内容 ("when")，再次验证结果 ("then")。
+Organize your test code along the given-when-then paradigm:
+First, initialize stuff in a given section ("given"),
+second call the actual tested thing ("when"),
+third validate the outcome ("then").
 
-如果 given 或 then 部分过长，您无法再从视觉上区分这三个部分，请提取子方法。空行或注释作为分隔符乍一看可能还不错，但并不能真正减少视觉混乱。尽管如此，空行或注释对于读者和测试新手区分这三个部分还是有所帮助的。
+If the given or then sections get so long
+that you cannot visually separate the three sections anymore, extract sub-methods.
+Blank lines or comments as separators may look good at first glance
+but don't really reduce the visual clutter.
+Still they are helpful for the reader and the novice test writer to separate the sections.
 
-#### "When" 恰为一个调用
+#### "When" is exactly one call
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试方法](#测试方法) > [本节](#when-恰为一个调用)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Methods](#test-methods) > [This section](#when-is-exactly-one-call)
 
-确保测试方法的 "when" 部分仅包含对被测类的一次调用：
+Make sure that the "when" section of your test method contains exactly one call to the class under test:
 
 ```ABAP
 METHOD rejects_invalid_input.
@@ -4086,25 +4751,32 @@ METHOD rejects_invalid_input.
 ENDMETHOD.
 ```
 
-调用多个对象表明该方法没有明确的焦点，测试内容过多。这使得测试失败时更难以找到原因：是第一次、第二次还是第三次调用导致了失败？这也使读者感到困惑，因为他不确定确切的被测功能是什么。
+Calling multiple things indicates that the method has no clear focus and tests too much.
+This makes it harder to find the cause when the test fails:
+was it the first, second, or third call that caused the failure?
+It also confuses the reader because he is not sure what the exact feature under test is.
 
-#### 除非真正需要否则勿添加 TEARDOWN
+#### Don't add a TEARDOWN unless you really need it
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试方法](#测试方法) > [本节](#除非真正需要否则勿添加-teardown)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Methods](#test-methods) > [This section](#dont-add-a-teardown-unless-you-really-need-it)
 
-通常只需要使用 `teardown` 方法来清除数据库条目或集成测试中的其他外部资源。
+`teardown` methods are usually only needed to clear up database entries
+or other external resources in integration tests.
 
-重置测试类的成员（尤其是 `cut` 和所用的测试替身）是多余的操作；在启动下一个测试方法之前，这些成员就会由 `setup` 方法覆盖。
+Resetting members of the test class, esp. `cut` and the used test doubles, is superfluous;
+they are overwritten by the `setup` method before the next test method is started.
 
-### 测试数据
+### Test Data
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#测试数据)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#test-data)
 
-#### 使其易于辨明含义
+#### Make it easy to spot meaning
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试数据](#测试数据) > [本节](#使其易于辨明含义)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Data](#test-data) > [This section](#make-it-easy-to-spot-meaning)
 
-在单元测试中，您希望能够快速判断出哪些数据和替身是需要关注的内容，哪些内容的作用只是为了防止代码崩溃。通过为没有含义的内容起一个显眼的名称和值来支持此功能，例如：
+In unit tests, you want to be able to quickly tell which data and doubles are important,
+and which ones are only there to keep the code from crashing.
+Support this by giving things that have no meaning obvious names and values, for example:
 
 ```ABAP
 DATA(alert_id) = '42'.                             " well-known meaningless numbers
@@ -4112,7 +4784,7 @@ DATA(detection_object_type) = '?=/"&'.             " 'keyboard accidents'
 CONSTANTS some_random_number TYPE i VALUE 782346.  " revealing variable names
 ```
 
-不要欺骗人们相信某些内容可以与真实的对象或真实的定制联系起来（如果没有联系）：
+Don't trick people into believing something connects to real objects or real customizing if it doesn't:
 
 ```ABAP
 " anti-pattern
@@ -4121,20 +4793,20 @@ DATA(detection_object_type) = 'FRA_SCLAIM'.  " this detection object type, too
 CONSTANTS memory_limit TYPE i VALUE 4096.    " this number looks carefully chosen
 ```
 
-#### 使其易于辨明差异
+#### Make it easy to spot differences
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试数据](#测试数据) > [本节](#使其易于辨明差异)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Data](#test-data) > [This section](#make-it-easy-to-spot-differences)
 
 ```ABAP
 exp_parameter_in = VALUE #( ( parameter_name = '45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789END1' )
                             ( parameter_name = '45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789END2' ) ).
 ```
 
-不要强迫读者去比较长且无意义的字符串来发现细微的差别。
+Don't force readers to compare long meaningless strings to spot tiny differences.
 
-#### 使用常量描述测试数据的用途和重要性
+#### Use constants to describe purpose and importance of test data
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [测试数据](#测试数据) > [本节](#使用常量描述测试数据的用途和重要性)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Test Data](#test-data) > [This section](#use-constants-to-describe-purpose-and-importance-of-test-data)
 
 ```ABAP
 CONSTANTS some_nonsense_key TYPE char8 VALUE 'ABCDEFGH'.
@@ -4150,15 +4822,15 @@ METHOD throws_on_invalid_entry.
 ENDMETHOD.
 ```
 
-### 断言
+### Assertions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [本节](#断言)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [This section](#assertions)
 
-#### 少而精的断言
+#### Few, focused assertions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#少而精的断言)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#few-focused-assertions)
 
-仅使用少量断言，准确地断言测试方法的内容。
+Assert only exactly what the test method is about, and this with a small number of assertions.
 
 ```ABAP
 METHOD rejects_invalid_input.
@@ -4169,7 +4841,11 @@ METHOD rejects_invalid_input.
 ENDMETHOD.
 ```
 
-断言过多表明该方法没有明确的重点。这会在很多地方将生产和测试代码耦合在一起：更改功能将需要重写大量的测试，尽管它们实际上并未涉及更改后的功能。各种各样的断言使读者感到困惑，难以辨别其中最重要的那个断言。
+Asserting too much is an indicator that the method has no clear focus.
+This couples productive and test code in too many places: changing a feature
+will require rewriting a large number of tests although they are not really involved with the changed feature.
+It also confuses the reader with a large variety of assertions,
+obscuring the one important, distinguishing assertion among them.
 
 ```ABAP
 " anti-pattern
@@ -4184,32 +4860,37 @@ METHOD rejects_invalid_input.
 ENDMETHOD.
 ```
 
-#### 使用恰当的断言类型
+#### Use the right assert type
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#使用恰当的断言类型)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#use-the-right-assert-type)
 
 ```ABAP
 cl_abap_unit_assert=>assert_equals( act = table
                                     exp = test_data ).
 ```
 
-断言的作用往往不止表面看到的那些，例如 `assert_equals` 包括类型匹配，如果值不同，还能提供准确的描述。使用错误的、过于常见的断言将迫使您立即进入调试器，而不是让您直接从错误消息中看到问题所在。
+Asserts often do more than meets the eye, for example `assert_equals`
+includes type matching and providing precise descriptions if values differ.
+Using the wrong, too-common asserts will force you into the debugger immediately
+instead of allowing you to see what is wrong right from the error message.
 
 ```ABAP
 " anti-pattern
 cl_abap_unit_assert=>assert_true( xsdbool( act = exp ) ).
 ```
 
-#### 断言内容而非数量
+#### Assert content, not quantity
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#断言内容而非数量)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#assert-content-not-quantity)
 
 ```ABAP
 assert_contains_exactly( actual   = table
                          expected = VALUE string_table( ( `ABC` ) ( `DEF` ) ( `GHI` ) ) ).
 ```
 
-如果可以表达期望的实际内容，就不要编写幻数数量断言。尽管仍然可以达到预期，但数字可能会有所不同。相反，尽管内容完全出乎意料，但数字可能会匹配。
+Don't write magic-number-quantity assertions if you can express the actual content you expect.
+Numbers may vary although the expectations are still met.
+In reverse, the numbers may match although the content is something completely unexpected.
 
 ```ABAP
 " anti-pattern
@@ -4217,18 +4898,21 @@ assert_equals( act = lines( log_messages )
                exp = 3 ).
 ```
 
-#### 断言质量而非内容
+#### Assert quality, not content
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#断言质量而非内容)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#assert-quality-not-content)
 
-如果您对结果的元质量感兴趣，但对实际内容本身不感兴趣，请使用合适的断言来表达：
+If you are interested in a meta quality of the result,
+but not in the actual content itself, express that with a suitable assert:
 
 ```ABAP
 assert_all_lines_shorter_than( actual_lines        = table
                                expected_max_length = 80 ).
 ```
 
-断言精确的内容会掩盖您实际想要测试的内容。它还很脆弱，因为重构可能会产生一个不同但完全可以接受的结果，尽管它会中断所有过于精确的单元测试。
+Asserting the precise content obscures what you actually want to test.
+It is also fragile because refactoring may produce a different
+but perfectly acceptable result although it breaks all your too-precise unit tests.
 
 ```ABAP
 " anti-pattern
@@ -4236,9 +4920,9 @@ assert_equals( act = table
                exp = VALUE string_table( ( `ABC` ) ( `DEF` ) ( `GHI` ) ) ).
 ```
 
-#### 使用 FAIL 检查是否出现预期异常
+#### Use FAIL to check for expected exceptions
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#使用-fail-检查是否出现预期异常)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#use-fail-to-check-for-expected-exceptions)
 
 ```ABAP
 METHOD throws_on_empty_input.
@@ -4252,9 +4936,9 @@ METHOD throws_on_empty_input.
 ENDMETHOD.
 ```
 
-#### 转发意外异常而非捕获就失败
+#### Forward unexpected exceptions instead of catching and failing
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#转发意外异常而非捕获就失败)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#forward-unexpected-exceptions-instead-of-catching-and-failing)
 
 ```ABAP
 METHODS reads_entry FOR TESTING RAISING /clean/some_exception.
@@ -4267,7 +4951,7 @@ METHOD reads_entry.
 ENDMETHOD.
 ```
 
-与以下代码相比，您的测试代码始终专注于愉快路径，因此更易于阅读和理解：
+Your test code remains focused on the happy path and is therefore much easier to read and understand, as compared to:
 
 ```ABAP
 " anti-pattern
@@ -4281,9 +4965,9 @@ METHOD reads_entry.
 ENDMETHOD.
 ```
 
-#### 编写自定义断言以缩短代码和避免重复
+#### Write custom asserts to shorten code and avoid duplication
 
-> [ABAP 整洁之道](#abap-整洁之道) > [目录](#目录) > [测试](#测试) > [断言](#断言) > [本节](#编写自定义断言以缩短代码和避免重复)
+> [Clean ABAP](#clean-abap) > [Content](#content) > [Testing](#testing) > [Assertions](#assertions) > [This section](#write-custom-asserts-to-shorten-code-and-avoid-duplication)
 
 ```ABAP
 METHODS assert_contains
@@ -4300,4 +4984,4 @@ METHOD assert_contains.
 ENDMETHOD.
 ```
 
-而不是一遍又一遍地复制粘贴。
+Instead of copy-pasting this over and over again.
