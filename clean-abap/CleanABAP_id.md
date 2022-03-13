@@ -1,6 +1,6 @@
 # Clean ABAP
 
-> [**English**](CleanABAP.md)
+> [English](CleanABAP.md)
 > &nbsp;·&nbsp;
 > [中文](CleanABAP_zh.md)
 > &nbsp;·&nbsp;
@@ -13,6 +13,8 @@
 > [Español](CleanABAP_es.md)
 > &nbsp;·&nbsp;
 > [한국어](CleanABAP_kr.md)
+> &nbsp;·&nbsp;
+> [**Bahasa Indonesia**](CleanABAP_id.md)
 
 This guide is an adoption of
 [Robert C. Martin's _Clean Code_]
